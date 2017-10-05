@@ -1,7 +1,9 @@
 package com.hyungjun212naver.castleproject.Activity;
 
+import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.RemoteException;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -24,20 +26,53 @@ import com.hyungjun212naver.castleproject.Fragment.Option4Fragment;
 import com.hyungjun212naver.castleproject.R;
 import com.hyungjun212naver.castleproject.Utility.Constants;
 
-public class MainActivity extends AppCompatActivity {
+import org.altbeacon.beacon.Beacon;
+import org.altbeacon.beacon.BeaconConsumer;
+import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.Identifier;
+import org.altbeacon.beacon.RangeNotifier;
+import org.altbeacon.beacon.Region;
 
+import java.util.Collection;
+
+
+public class MainActivity extends AppCompatActivity implements BeaconConsumer{
+
+    /**
+     * Navigation UI, Variables setting
+     */
     private NavigationView navigationView;
     private DrawerLayout drawer;
     private Toolbar toolbar;
-    private TextView nav_hd_name;
-
-    // index to identify current nav menu item
     public static int navItemIndex = 0;
 
     public static int countBackFlag;
     private final long FINISH_INTERVAL_TIME = 2000;
     private long backpressedTime = 0;
+    private String[] activityTitles;
+    private Handler mHandler;
 
+    public static String LOGINSTATE = Constants.LOGIN.LOGINFAIL;
+    private static String USER_ID = null;
+    private static String LOGIN_ID;
+
+    /**
+     * Beacon Variables Setting
+     */
+    BeaconConsumer beaconConsumer;
+    private BluetoothAdapter mBluetoothAdapter;
+    private BeaconManager beaconManager;
+    String  UUID,Major,Minor;
+
+    //UUID값
+    private static final String UUID1 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000001"; //우리 비콘 UUID
+    private static final String UUID2 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000002";
+    private static final String UUID3 = "aaaaaaaa-bbbb-bbbb-cccc-cccc12121212";
+    private static final String UUID4 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000021";
+
+    /**
+     * Log Tag
+     */
     private static final String TAG_HOME = "home";
     private static final String TAG_OPT_1 = "option_1";
     private static final String TAG_OPT_2 = "option_2";
@@ -45,25 +80,15 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_OPT_4 = "option_4";
     public static String CURRENT_TAG = TAG_HOME;
 
-    private String[] activityTitles;
-
-    private Handler mHandler;
-
-    public static String LOGINSTATE = Constants.LOGIN.LOGINFAIL;
-    private static String USER_ID = null;
-    private static String LOGIN_ID;
-//
 //    public static String CSL = Constants.DATABASE.CUSTOMERSRCHLIST_N;
 //    public static ArrayList<CustomerSrchList.CustomerSrchListData> customerSrchListDataArrayList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-//        if(LOGINSTATE == Constants.LOGIN.LOGINFAIL){
-//            openLoginActivity();
-//        }
-
+        if(!Constants.UserVisit.isGetServerData()) {
+            getServerData();
+        }
         initMainActivity(savedInstanceState);
     }
 
@@ -82,12 +107,7 @@ public class MainActivity extends AppCompatActivity {
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.nav_view);
-
         activityTitles = getResources().getStringArray(R.array.nav_item_activity_titles);
-
-//        loadNavHeader();
-
-//        setNav_hd_name(USER_ID);
 
         setUpNavigationView();
 
@@ -98,34 +118,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    private void openLoginActivity(){
-//        Intent intent = new Intent(this, LoginActivity.class);
-//        startActivityForResult(intent, 9271);
-//    }
-//
-//
-//    private void setNav_hd_name(String name){
-//        View nav_header_view = navigationView.getHeaderView(0);
-//        nav_hd_name = (TextView) nav_header_view.findViewById(R.id.nav_hd_name);
-//        nav_hd_name.setText(name + " 님");
-//    }
-
-//    private void loadNavHeader() {
-//        // showing dot next to notifications label
-//        navigationView.getMenu().getItem(3).setActionView(R.layout.menu_dot);
-//    }
-
     public void loadHomeFragment() {
 
         selectNavMenu();
-
         setToolbarTitle();
 
         if (getSupportFragmentManager().findFragmentByTag(CURRENT_TAG) != null) {
             drawer.closeDrawers();
             return;
         }
-
         Runnable mPendingRunnable = new Runnable() {
             @Override
             public void run() {
@@ -141,15 +142,12 @@ public class MainActivity extends AppCompatActivity {
         if (mPendingRunnable != null) {
             mHandler.post(mPendingRunnable);
         }
-
         drawer.closeDrawers();
-
         invalidateOptionsMenu();
     }
 
     private Fragment getHomeFragment() {
         switch (navItemIndex) {
-
             case 0:
                 HomeFragment homeFragment = new HomeFragment();
                 return homeFragment;
@@ -191,8 +189,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
-
-
                 switch (menuItem.getItemId()) {
 
                     case R.id.nav_home:
@@ -262,7 +258,6 @@ public class MainActivity extends AppCompatActivity {
             if(CURRENT_TAG != TAG_HOME){
                 homeButtonClicked(R.id.nav_home);
             } else {
-
                 long tempTime = System.currentTimeMillis();
                 long intervalTime = tempTime - backpressedTime;
 
@@ -271,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
                     super.onBackPressed();
                 } else {
                     backpressedTime = tempTime;
-                    Toast.makeText(getApplicationContext(), "한번 더 뒤로가기를 누르시면 \n 종료됩니다.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "한번 더 뒤로가기를 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -313,8 +308,48 @@ public class MainActivity extends AppCompatActivity {
         loadHomeFragment();
     }
 
-//    public static String getLOGIN_ID(){
-//        return LOGIN_ID;
-//    }
+    /**
+     * 서버에서 유저의 방문 데이터를 가져와서 전역변수에 저장
+     */
+    public void getServerData(){
+        //서버에서 데이터 가져오는 코드
+        Constants.UserVisit.setPlace01(true);
+        Constants.UserVisit.setPlace02(false);
+        Constants.UserVisit.setPlace03(false);
+        Constants.UserVisit.setPlace04(true);
+    }
 
+    @Override
+    protected  void onDestroy(){
+        super.onDestroy();
+        beaconManager.unbind(this);
+    }
+
+    @Override
+    public void onBeaconServiceConnect() {
+        beaconManager.addRangeNotifier(new RangeNotifier() {
+            @Override
+            public void didRangeBeaconsInRegion(Collection<Beacon> beacons, Region region) {
+                if (beacons.size() > 0) {
+                    Log.e(CURRENT_TAG, "--------------------------------------------------------------------------------");
+                    Log.e(CURRENT_TAG, "Distance : " + beacons.iterator().next().getDistance() + "(meter)");
+                    UUID = beacons.iterator().next().getId1().toString();
+                    Log.e(CURRENT_TAG, "UUID : " + UUID);
+                    Major = beacons.iterator().next().getId2().toString();
+                    Log.i(CURRENT_TAG, "Major : " + Major);
+                    Minor = beacons.iterator().next().getId3().toString();
+                    Log.i(CURRENT_TAG, "Minor : " + Minor);
+                    Log.e(CURRENT_TAG, "--------------------------------------------------------------------------------");
+                }
+            }
+        });
+        try{
+            beaconManager.startRangingBeaconsInRegion(new Region("Region1", Identifier.parse(UUID1), null, null));
+            beaconManager.startRangingBeaconsInRegion(new Region("Region2", Identifier.parse(UUID2), null, null));
+            beaconManager.startRangingBeaconsInRegion(new Region("Region3", Identifier.parse(UUID3), null, null));
+            beaconManager.startRangingBeaconsInRegion(new Region("Region4", Identifier.parse(UUID4), null, null));
+        }catch(RemoteException e){
+
+        }
+    }
 }
