@@ -14,14 +14,18 @@
     <string name="options_1">옵션1</string>
     <string name="options_2">옵션2</string>
     <string name="options_3">옵션3</string>
-    <string name="options_4">옵션4</string>
+    <string name="options_4">셋팅</string>
 
     <string-array name="nav_item_activity_titles">
         <item>홈</item>
         <item>옵션1</item>
         <item>옵션2</item>
         <item>옵션3</item>
-        <item>옵션4</item>
+        <item>셋팅</item>
     </string-array>
 
+    <string name="korean">한국어</string>
+    <string name="english">English</string>
+    <string name="japanese">日本語</string>
+    <string name="chinese">汉语</string>
 </resources>
