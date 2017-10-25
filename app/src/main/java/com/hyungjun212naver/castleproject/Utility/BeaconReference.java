@@ -42,7 +42,7 @@ public class BeaconReference extends Application implements BootstrapNotifier {
     ArrayList<Region> regions;
     private static final String UUID1 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000001"; //우리 비콘 UUID
     private static final String UUID2 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000002"; //지금 있는 스벅 UUID
-    private static final String UUID3 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000003";
+    private static final String UUID3 = "8fef2e11-d140-2ed1-2eb1-4138edcabe09";
     private static final String UUID4 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000021"; //우리 비콘 UUID
 
     @Override

@@ -28,4 +28,28 @@
     <string name="english">English</string>
     <string name="japanese">日本語</string>
     <string name="chinese">汉语</string>
+
+    <string-array name="AboutPlace_information">
+        <item>낙산은 풍수지리적으로 북악산의 좌청룡에 해당한다고 알려져 있으며 전체가 화강암으로 이루어져 있다. 산 모양이 낙타를 닮았다 해서 붙여진 이름이며 낙타산으로도 불린다. 산 북쪽의 홍화문(弘化門)은 없어졌고 남쪽의 흥인지문(興仁之門)이 남아 있다. 산의 중턱까지 아파트가 들어서 있었으나 서울시의 녹지 확충 계획에 의해 낙산공원으로 탈바꿈했다.152㎢의 면적에 낙산의 이모저모를 볼 수 있는 낙산전시관과 옛 모습대로 복원한 성곽을 따라 역사탐방로가 이어져 있고 산책로와 체육시설이 잘 갖추어져 있다. 서울 시내가 한눈에 들어오는 시원한 전망과 오밀조밀한 낙산 아래 동네 풍경을 카메라에 담으려는 사람들에게는 촬영 명소로도 알려져 있으며 영화나 드라마의 촬영장으로도 애용되고 있다.</item>
+        <item>낙산은.... 블라블라 영어버전</item>
+        <item>낙산은...... 블라블라 일본어 버전</item>
+        <item>낙산은..... 블라블라 중국어 버전</item>
+    </string-array>
+
+    <string-array name="About_Place_titles">
+        <item>낙산공원</item>
+        <item>낙산공원(영어)</item>
+        <item>낙산공원(일본어)</item>
+        <item>낙산공원(중국어)</item>
+    </string-array>
+
+    <string-array name="AboutPlace_weatherInfo">
+        <item>날씨정보</item>
+        <item>Weatherinfo</item>
+        <item>天気情報</item>
+        <item>天氣信息</item>
+    </string-array>
+    <string name="title_activity_about_place_">AboutPlace_Activity</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_maps">Map</string>
 </resources>

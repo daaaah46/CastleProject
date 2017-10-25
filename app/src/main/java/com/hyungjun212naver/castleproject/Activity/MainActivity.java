@@ -6,29 +6,27 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.Button;
 
 import com.hyungjun212naver.castleproject.Fragment.HomeFragment;
 import com.hyungjun212naver.castleproject.Fragment.Option1Fragment;
 import com.hyungjun212naver.castleproject.Fragment.Option2Fragment;
 import com.hyungjun212naver.castleproject.Fragment.Option3Fragment;
-import com.hyungjun212naver.castleproject.Fragment.Option4Fragment;
+import com.hyungjun212naver.castleproject.Fragment.SettingFragment;
 import com.hyungjun212naver.castleproject.R;
 import com.hyungjun212naver.castleproject.Utility.Constants;
 
 import org.altbeacon.beacon.Beacon;
 import org.altbeacon.beacon.BeaconConsumer;
 import org.altbeacon.beacon.BeaconManager;
+import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
@@ -37,24 +35,25 @@ import java.util.Collection;
 
 
 public class MainActivity extends AppCompatActivity implements BeaconConsumer{
-
-    /**
-     * Navigation UI, Variables setting
-     */
-    private NavigationView navigationView;
-    private DrawerLayout drawer;
-    private Toolbar toolbar;
-    public static int navItemIndex = 0;
-
-    public static int countBackFlag;
-    private final long FINISH_INTERVAL_TIME = 2000;
-    private long backpressedTime = 0;
-    private String[] activityTitles;
-    private Handler mHandler;
-
     public static String LOGINSTATE = Constants.LOGIN.LOGINFAIL;
     private static String USER_ID = null;
     private static String LOGIN_ID;
+
+    /**
+     * UI Setting
+     */
+    Button btn_home;
+    Button btn_setting;
+
+
+    /**
+     * fragment Valueables
+     */
+    Fragment fragment;
+    FragmentManager fragmentManager;
+    FragmentTransaction fragmentTransaction;
+    int FragmentID = 1;
+
 
     /**
      * Beacon Variables Setting
@@ -68,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     private static final String UUID1 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000001"; //우리 비콘 UUID
     private static final String UUID2 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000002";
     private static final String UUID3 = "aaaaaaaa-bbbb-bbbb-cccc-cccc12121212";
-    private static final String UUID4 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000021";
+    private static final String UUID4 = "8fef2e11-d140-2ed1-2eb1-4138edcabe09";
 
     /**
      * Log Tag
@@ -80,12 +79,10 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     private static final String TAG_OPT_4 = "option_4";
     public static String CURRENT_TAG = TAG_HOME;
 
-//    public static String CSL = Constants.DATABASE.CUSTOMERSRCHLIST_N;
-//    public static ArrayList<CustomerSrchList.CustomerSrchListData> customerSrchListDataArrayList;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        beaconSetting();
         if(!Constants.UserVisit.isGetServerData()) {
             getServerData();
         }
@@ -93,220 +90,56 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     }
 
     private void initMainActivity(Bundle savedInstanceState){
-
-        countBackFlag = 0;
-
-        Log.e("MainActivity", "start");
-
         setContentView(R.layout.activity_main);
+        ChangeFragment();
+        btn_home = (Button)findViewById(R.id.btn_home_homebtn);
+        btn_setting = (Button)findViewById(R.id.btn_home_setting);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        mHandler = new Handler();
-
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
-        activityTitles = getResources().getStringArray(R.array.nav_item_activity_titles);
-
-        setUpNavigationView();
-
-        if (savedInstanceState == null) {
-            navItemIndex = 0;
-            CURRENT_TAG = TAG_HOME;
-            loadHomeFragment();
-        }
-    }
-
-    public void loadHomeFragment() {
-
-        selectNavMenu();
-        setToolbarTitle();
-
-        if (getSupportFragmentManager().findFragmentByTag(CURRENT_TAG) != null) {
-            drawer.closeDrawers();
-            return;
-        }
-        Runnable mPendingRunnable = new Runnable() {
+        btn_home.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                Fragment fragment = getHomeFragment();
-                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-                fragmentTransaction.setCustomAnimations(android.R.anim.fade_in,
-                        android.R.anim.fade_out);
-                fragmentTransaction.replace(R.id.frame, fragment, CURRENT_TAG);
-                fragmentTransaction.commitAllowingStateLoss();
+            public void onClick(View view) {
+                FragmentID = 1;
+                ChangeFragment();
             }
-        };
+        });
 
-        if (mPendingRunnable != null) {
-            mHandler.post(mPendingRunnable);
-        }
-        drawer.closeDrawers();
-        invalidateOptionsMenu();
+        btn_setting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentID = 4;
+                ChangeFragment();
+            }
+        });
     }
 
-    private Fragment getHomeFragment() {
-        switch (navItemIndex) {
-            case 0:
-                HomeFragment homeFragment = new HomeFragment();
-                return homeFragment;
 
-            case 1:
-                Option1Fragment option1Fragment = new Option1Fragment();
-                return option1Fragment;
-
-            case 2:
-                Option2Fragment option2Fragment = new Option2Fragment();
-                return option2Fragment;
-
-            case 3:
-                Option3Fragment option3Fragment = new Option3Fragment();
-                return option3Fragment;
-
+    private void ChangeFragment() {
+        fragmentManager = getSupportFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
+        switch (FragmentID){
+            case 1 :
+                fragment = new HomeFragment();
+                fragmentTransaction.replace(R.id.frameLay_home_layout,fragment);
+                fragmentTransaction.commit();
+                break;
+            case 2 :
+                break;
+            case 3 :
+                break;
             case 4:
-                Option4Fragment option4Fragment = new Option4Fragment();
-                return option4Fragment;
-
-            default:
-                return new HomeFragment();
+                fragment = new SettingFragment();
+                fragmentTransaction.replace(R.id.frameLay_home_layout,fragment);
+                fragmentTransaction.commit();
+                break;
         }
     }
-
+    /*
     private void setToolbarTitle() {
         getSupportActionBar().setTitle(activityTitles[navItemIndex]);
         toolbar.setTitle(activityTitles[navItemIndex]);
 
-    }
+    }*/
 
-    private void selectNavMenu() {
-        navigationView.getMenu().getItem(navItemIndex).setChecked(true);
-    }
-
-    private void setUpNavigationView() {
-
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-
-            @Override
-            public boolean onNavigationItemSelected(MenuItem menuItem) {
-                switch (menuItem.getItemId()) {
-
-                    case R.id.nav_home:
-                        navItemIndex = 0;
-                        CURRENT_TAG = TAG_HOME;
-                        break;
-                    case R.id.nav_option_1:
-                        navItemIndex = 1;
-                        CURRENT_TAG = TAG_OPT_1;
-                        break;
-                    case R.id.nav_option_2:
-                        navItemIndex = 2;
-                        CURRENT_TAG = TAG_OPT_2;
-                        break;
-                    case R.id.nav_option_3:
-                        navItemIndex = 3;
-                        CURRENT_TAG = TAG_OPT_3;
-                        break;
-                    case R.id.nav_option_4:
-                        navItemIndex = 4;
-                        CURRENT_TAG = TAG_OPT_4;
-                        break;
-                    default:
-                        navItemIndex = 0;
-                }
-
-                if (menuItem.isChecked()) {
-                    menuItem.setChecked(false);
-                } else {
-                    menuItem.setChecked(true);
-                }
-                menuItem.setChecked(true);
-
-                loadHomeFragment();
-
-                return true;
-            }
-        });
-
-        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.openDrawer, R.string.closeDrawer) {
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-            }
-        };
-
-
-        drawer.setDrawerListener(actionBarDrawerToggle);
-
-        actionBarDrawerToggle.syncState();
-    }
-
-    @Override
-    public void onBackPressed() {
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-
-            if(CURRENT_TAG != TAG_HOME){
-                homeButtonClicked(R.id.nav_home);
-            } else {
-                long tempTime = System.currentTimeMillis();
-                long intervalTime = tempTime - backpressedTime;
-
-                if (0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime) {
-                    LOGINSTATE = Constants.LOGIN.LOGINFAIL;
-                    super.onBackPressed();
-                } else {
-                    backpressedTime = tempTime;
-                    Toast.makeText(getApplicationContext(), "한번 더 뒤로가기를 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }
-    }
-
-    public void homeButtonClicked(int btn_id){
-        switch (btn_id) {
-
-            case R.id.nav_home:
-                navItemIndex = 0;
-                CURRENT_TAG = TAG_HOME;
-                break;
-            case R.id.nav_option_1:
-                navItemIndex = 1;
-                CURRENT_TAG = TAG_OPT_1;
-                break;
-            case R.id.nav_option_2:
-                navItemIndex = 2;
-                CURRENT_TAG = TAG_OPT_2;
-                break;
-            case R.id.nav_option_3:
-                navItemIndex = 3;
-                CURRENT_TAG = TAG_OPT_3;
-                break;
-            case R.id.nav_option_4:
-                navItemIndex = 4;
-                CURRENT_TAG = TAG_OPT_4;
-                break;
-            default:
-                navItemIndex = 0;
-        }
-
-        loadHomeFragment();
-    }
-
-    public void opt2clicked(){
-        navItemIndex = 1;
-        CURRENT_TAG = TAG_OPT_1;
-        loadHomeFragment();
-    }
 
     /**
      * 서버에서 유저의 방문 데이터를 가져와서 전역변수에 저장
@@ -319,6 +152,17 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         Constants.UserVisit.setPlace04(true);
     }
 
+    void beaconSetting(){
+        beaconManager = BeaconManager.getInstanceForApplication(this);
+        beaconManager.getBeaconParsers().add((new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")));
+        //현재 5초로 스캔 시간 설정 > 나중에 2분으로 변경!
+        beaconManager.setForegroundBetweenScanPeriod(5000);
+        beaconManager.bind(this);
+    }
+
+    /**
+     * BeaconConsumer
+     */
     @Override
     protected  void onDestroy(){
         super.onDestroy();

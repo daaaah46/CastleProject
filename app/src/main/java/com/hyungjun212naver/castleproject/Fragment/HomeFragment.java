@@ -1,8 +1,11 @@
 package com.hyungjun212naver.castleproject.Fragment;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +14,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.hyungjun212naver.castleproject.Activity.AboutPlaceActivity;
 import com.hyungjun212naver.castleproject.Activity.MainActivity;
 import com.hyungjun212naver.castleproject.R;
 import com.hyungjun212naver.castleproject.Utility.Constants;
@@ -63,8 +67,7 @@ public class HomeFragment extends Fragment {
         imgbtn_place01.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String info = "1번장소 설명 넣기. 이거 텍스트로 해도 되려나? 나중에 이미지로 변경될 수도...!";
-
+                String info = "1번장소 설명";
                 tv_home_placeInfo.setText(info);
                 ClickedButton = 1;
             }
@@ -73,8 +76,7 @@ public class HomeFragment extends Fragment {
         imgbtn_place02.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String info = "2번장소 설명 넣기. 이거 텍스트로 해도 되려나? 나중에 이미지로 변경될 수도...!";
-
+                String info = "2번장소 설명";
                 tv_home_placeInfo.setText(info);
                 ClickedButton = 2;
             }
@@ -83,9 +85,8 @@ public class HomeFragment extends Fragment {
         imgbtn_place03.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String info = "3번장소 설명 넣기. 이거 텍스트로 해도 되려나? 나중에 이미지로 변경될 수도...!";
+                String info = "3번장소 설명 넣기";
                 tv_home_placeInfo.setText(info);
-
                 ClickedButton = 3;
             }
         });
@@ -93,9 +94,8 @@ public class HomeFragment extends Fragment {
         imgbtn_place04.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String info = "4번장소 설명 넣기. 이거 텍스트로 해도 되려나? 나중에 이미지로 변경될 수도...!";
+                String info = "4번장소 설명 넣기";
                 tv_home_placeInfo.setText(info);
-
                 ClickedButton = 4;
             }
         });
@@ -103,20 +103,21 @@ public class HomeFragment extends Fragment {
         btn_home_moreInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                switch (ClickedButton){
-                    case 1:
-                        MainActivity.navItemIndex = 1;
-                        break;
-                    case 2:
-                        MainActivity.navItemIndex = 1;
-                        break;
-                    case 3:
-                        MainActivity.navItemIndex = 1;
-                        break;
-                    case 4:
-                        MainActivity.navItemIndex = 1;
-                        break;
-                }
+                Intent intent = new Intent(HomeFragment.this.getActivity(), AboutPlaceActivity.class);
+                intent.putExtra("placenum", ClickedButton);
+                startActivity(intent);
+
+                /*
+                Fragment간 이동 시 이렇게 작성할 것
+                 */
+                /*Fragment fragment;
+                fragment = new Option1Fragment();
+                FragmentManager fragmentManager;
+                fragmentManager = getFragmentManager();
+                FragmentTransaction fragmentTransaction;
+                fragmentTransaction = fragmentManager.beginTransaction();
+               fragmentTransaction.replace(R.id.frame,fragment);
+                fragmentTransaction.commit();*/
             }
         });
         return view;

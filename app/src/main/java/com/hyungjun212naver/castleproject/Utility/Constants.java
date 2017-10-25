@@ -4,6 +4,8 @@ package com.hyungjun212naver.castleproject.Utility;
  * Created by hyung on 2017-09-25.
  */
 
+
+
 public class Constants {
 
     public static final class LOGIN {
@@ -65,6 +67,31 @@ public class Constants {
 
         public static void setPlace04(boolean place04) {
             UserVisit.place04 = place04;
+        }
+    }
+
+
+    public static class Language{
+        private static int language;
+
+        public static int getLanguage() {
+            return language;
+        }
+
+        public static void setLanguage(int language) {
+            Language.language = language;
+        }
+    }
+
+    public static class Popup{
+        private static boolean popupFlag;
+
+        public static boolean isPopupFlag() {
+            return popupFlag;
+        }
+
+        public static void setPopupFlag(boolean popupFlag) {
+            Popup.popupFlag = popupFlag;
         }
     }
 }

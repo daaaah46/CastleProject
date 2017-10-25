@@ -8,6 +8,6 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:text="공지사항 같은 확인 페이지 만들면 될 것 같다." />
 
 </FrameLayout>
