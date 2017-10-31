@@ -2,6 +2,7 @@ package com.hyungjun212naver.castleproject.Fragment;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceFragment;
 import android.support.annotation.IdRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -22,21 +23,17 @@ public class SettingFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public SettingFragment() {
-
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
-        View  view = inflater.inflate(R.layout.fragment_option4, container, false);
+        View  view = inflater.inflate(R.layout.fragment_setting, container, false);
 
+        /*
         rG_language = (RadioGroup)view.findViewById(R.id.rG_language);
         rG_language.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -61,7 +58,7 @@ public class SettingFragment extends Fragment {
                 }
                 Constants.Popup.setPopupFlag(ischecked);
             }
-        });
+        });*/
 
         return view;
     }

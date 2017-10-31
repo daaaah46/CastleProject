@@ -36,7 +36,7 @@ public class AboutPlace_ActivityFragment extends Fragment {
 
         //tv_opt1_placeInfo = (TextView)view.findViewById(R.id.tv_opt1_placeInfo);
 
-        placeInfo = getResources().getStringArray(R.array.AboutPlace_information);
+        //placeInfo = getResources().getStringArray(R.array.AboutPlace_information);
 
         setLanguageforinformation();
 

@@ -11,13 +11,13 @@ import android.webkit.WebView;
 
 import com.hyungjun212naver.castleproject.R;
 
-public class Option3Fragment extends Fragment {
+public class ProfileFragment extends Fragment {
 
     private WebView getInstarhashtag;
     private WebSettings mWebSettings;
     private OnFragmentInteractionListener mListener;
 
-    public Option3Fragment() {
+    public ProfileFragment() {
 
     }
 
@@ -30,11 +30,12 @@ public class Option3Fragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_option3, container, false);
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
         getInstarhashtag = (WebView)view.findViewById(R.id.about_place_getinstarhashtag);
         mWebSettings = getInstarhashtag.getSettings();
         mWebSettings.setJavaScriptEnabled(true);
-        getInstarhashtag.loadUrl("https://congcheck.herokuapp.com/");
+        //getInstarhashtag.loadUrl("https://congcheck.herokuapp.com/");
+        getInstarhashtag.loadUrl("https://www.instagram.com/explore/tags/%EB%82%99%EC%82%B0/");
         return view;
     }
 
