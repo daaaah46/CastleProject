@@ -69,29 +69,4 @@ public class Constants {
             UserVisit.place04 = place04;
         }
     }
-
-
-    public static class Language{
-        private static int language;
-
-        public static int getLanguage() {
-            return language;
-        }
-
-        public static void setLanguage(int language) {
-            Language.language = language;
-        }
-    }
-
-    public static class Popup{
-        private static boolean popupFlag;
-
-        public static boolean isPopupFlag() {
-            return popupFlag;
-        }
-
-        public static void setPopupFlag(boolean popupFlag) {
-            Popup.popupFlag = popupFlag;
-        }
-    }
 }
