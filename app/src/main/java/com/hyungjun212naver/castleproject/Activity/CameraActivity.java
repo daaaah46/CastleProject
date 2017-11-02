@@ -1,9 +1,12 @@
 package com.hyungjun212naver.castleproject.Activity;
 
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Environment;
@@ -14,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -47,11 +51,6 @@ public class CameraActivity extends AppCompatActivity {
         // Create an instance of Camera
         mCamera = getCameraInstance();
 
-        /*layoutInflater = LayoutInflater.from(getBaseContext());
-        View viewControl = layoutInflater.inflate(R.layout.layout_cameraimage, null);
-        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        this.addContentView(viewControl, layoutParams);*/
-
         // Create our Preview view and set it as the content of our activity.
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
@@ -68,10 +67,6 @@ public class CameraActivity extends AppCompatActivity {
         });
 
     }
-
-    /**
-     * 이 부분 카메라 선택해서 할 수 있음
-     */
 
     /** Check if this device has a camera */
     private boolean checkCameraHardware(Context context) {
@@ -130,15 +125,26 @@ public class CameraActivity extends AppCompatActivity {
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
-
             File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
             if (pictureFile == null){
                 Log.d(TAG, "Error creating media file, check storage permissions");
                 return;
             }
 
+            Bitmap cameraBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+            int w = cameraBitmap.getWidth();int h = cameraBitmap.getHeight();
+
+            Bitmap newImage = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(newImage);
+            canvas.drawBitmap(cameraBitmap, 0f, 0f, null);
+
+            Drawable d = getResources().getDrawable(R.mipmap.ic_launcher_round);
+            d.setBounds(50, 100, d.getIntrinsicWidth()+50, d.getIntrinsicHeight()+100);
+            d.draw(canvas);
+
             try {
                 FileOutputStream fos = new FileOutputStream(pictureFile);
+                newImage.compress(Bitmap.CompressFormat.JPEG, 80, fos);
                 fos.write(data);
                 fos.close();
             } catch (FileNotFoundException e) {
@@ -185,8 +191,6 @@ public class CameraActivity extends AppCompatActivity {
         } else {
             return null;
         }
-
         return mediaFile;
     }
-
 }
