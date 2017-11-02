@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.net.Uri;
@@ -39,9 +40,15 @@ public class CameraActivity extends AppCompatActivity {
     private CameraPreview mPreview;
     private static String AbsolutePath;
     private boolean takePicture = false;
-    LayoutInflater layoutInflater = null;
+
 
     public static final int MEDIA_TYPE_IMAGE = 1;
+    public static final int FLASH_MODE_ON = 2;
+    public static final int FLASH_MODE_OFF = 3;
+    private int FlashMode;
+
+    Button flash;
+    Button captureButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +57,7 @@ public class CameraActivity extends AppCompatActivity {
 
         // Create an instance of Camera
         mCamera = getCameraInstance();
+        FlashMode = FLASH_MODE_OFF;
 
         // Create our Preview view and set it as the content of our activity.
         mPreview = new CameraPreview(this, mCamera);
@@ -57,7 +65,7 @@ public class CameraActivity extends AppCompatActivity {
         preview.addView(mPreview);
 
         // Add a listener to the Capture button
-        Button captureButton = (Button) findViewById(R.id.button_capture);
+        captureButton = (Button) findViewById(R.id.btn_camera_capture);
         captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -66,12 +74,19 @@ public class CameraActivity extends AppCompatActivity {
             }
         });
 
+        flash = (Button) findViewById(R.id.btn_camera_flash);
+        flash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getFlashMode();
+            }
+        });
+
     }
 
     /** Check if this device has a camera */
     private boolean checkCameraHardware(Context context) {
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-
             return true;
         } else {
             // no camera on this device
@@ -131,7 +146,7 @@ public class CameraActivity extends AppCompatActivity {
                 return;
             }
 
-            Bitmap cameraBitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+            Bitmap cameraBitmap = rotateImage(BitmapFactory.decodeByteArray(data, 0, data.length), 90);
             int w = cameraBitmap.getWidth();int h = cameraBitmap.getHeight();
 
             Bitmap newImage = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
@@ -192,5 +207,40 @@ public class CameraActivity extends AppCompatActivity {
             return null;
         }
         return mediaFile;
+    }
+
+    private Bitmap rotateImage(Bitmap bitmap, int degree){
+        int w = bitmap.getWidth();
+        int h = bitmap.getHeight();
+
+        Matrix mtx = new Matrix();
+        mtx.postRotate(degree);
+
+        return Bitmap.createBitmap(bitmap, 0,0,w,h,mtx, true);
+    }
+
+    public void getFlashMode(){
+        switch (FlashMode){
+            case FLASH_MODE_ON:
+                FlashMode = FLASH_MODE_OFF;
+                break;
+            case FLASH_MODE_OFF:
+                FlashMode = FLASH_MODE_ON;
+                break;
+        }
+        FlashSetting();
+    }
+
+    private void FlashSetting(){
+        Camera.Parameters parameters = mCamera.getParameters();
+        switch (FlashMode){
+            case FLASH_MODE_ON:
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                break;
+            case FLASH_MODE_OFF:
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                break;
+        }
+        mCamera.setParameters(parameters);
     }
 }
