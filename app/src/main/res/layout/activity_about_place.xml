@@ -5,31 +5,18 @@
     android:id = "@+id/AboutPlaceLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.hyungjun212naver.castleproject.Activity.AboutPlaceActivity">
-
-    <android.support.design.widget.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
-
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-    </android.support.design.widget.AppBarLayout>
+    tools:context="com.hansung.congcheck.Activity.AboutPlaceActivity">
 
     <include
         android:id="@+id/place_include"
         layout="@layout/content_about_place" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
+    <include
+        android:id="@+id/navigation"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@mipmap/ic_camera" />
+        android:layout_gravity="bottom"
+        layout = "@layout/layout_bottomnav"
+        />
+
 </android.support.design.widget.CoordinatorLayout>
