@@ -1,59 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="@color/colorBlack"
     android:orientation="vertical">
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="45dp"
+        android:layout_gravity="top"
         android:orientation="horizontal">
-        <Button
+
+        <ImageButton
             android:id="@+id/btn_camera_flash"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="버튼" />
+            app:srcCompat="@mipmap/camera_nonfalsh" />
 
-        <Button
+        <ImageButton
+            android:id="@+id/btn_camera_timer"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="설정이" />
+            app:srcCompat="@mipmap/camera_timer" />
 
-        <Button
+        <ImageButton
+            android:id="@+id/btn_camera_ratio"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="가능하네" />
+            app:srcCompat="@mipmap/camera_screen_ratio_fourthree" />
+
+        <ImageButton
+            android:id="@+id/btn_camera_sticker"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:srcCompat="@mipmap/camera_sticker" />
+
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/camera_preview"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1" />
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/iv_camera_sticker"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter" />
+
+        <FrameLayout
+            android:id="@+id/camera_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="110dp"
+        android:layout_gravity="bottom"
         android:orientation="horizontal">
-        <Button
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="버튼1" />
 
         <Button
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ImageButton
             android:id="@+id/btn_camera_capture"
+            style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_weight="1"
-            android:text="Capture" />
+            app:srcCompat="@mipmap/camera_photograph" />
 
-        <Button
+        <ImageButton
+            android:id="@+id/btn_camera_transition"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_weight="1"
-            android:text="버튼2" />
+            android:text="버튼2"
+            app:srcCompat="@mipmap/camera_switch" />
     </LinearLayout>
 </LinearLayout>

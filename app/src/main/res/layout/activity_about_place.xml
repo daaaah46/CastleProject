@@ -1,22 +1,337 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id = "@+id/AboutPlaceLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.hansung.congcheck.Activity.AboutPlaceActivity">
+    android:layout_height="match_parent">
 
-    <include
-        android:id="@+id/place_include"
-        layout="@layout/content_about_place" />
-
-    <include
-        android:id="@+id/navigation"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        layout = "@layout/layout_bottomnav"
-        />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-</android.support.design.widget.CoordinatorLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="240dp">
+
+            <ImageView
+                android:id="@+id/iv_aboutplace_placeImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:onClick="onClickedPlaceImage"
+                android:scaleType="fitXY"
+                android:src="@mipmap/home_place_naksanpark_image" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:layout_alignBottom="@id/iv_aboutplace_placeImage"
+                android:layout_alignLeft="@id/iv_aboutplace_placeImage"
+                android:layout_alignRight="@id/iv_aboutplace_placeImage"
+                android:layout_alignTop="@id/iv_aboutplace_placeImage"
+                android:src="@mipmap/home_representative_picture_size" />
+
+            <TextView
+                android:id="@+id/tv_aboutplace_placeName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/iv_aboutplace_placeImage"
+                android:layout_alignLeft="@id/iv_aboutplace_placeImage"
+                android:layout_alignRight="@id/iv_aboutplace_placeImage"
+                android:layout_alignTop="@id/iv_aboutplace_placeImage"
+                android:gravity="center"
+                android:text="낙산공원 길"
+                android:textColor="#FFFFFF"
+                android:textSize="@dimen/toolbar_placename_text_size" />
+        </RelativeLayout>
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/imageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="10dp"
+                android:src="@mipmap/home_information"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tv_aboutplace_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:textSize="@dimen/aboutplace_icontext_size"
+                android:textStyle="bold"
+                app:layout_constraintHorizontal_bias="0.501"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/imageButton" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginRight="48dp"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginLeft="48dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginStart="48dp"
+                android:layout_marginEnd="48dp"
+                android:id="@+id/linearLayout2"
+                app:layout_constraintHorizontal_bias="0.0"
+                android:layout_marginTop="11dp"
+                app:layout_constraintTop_toBottomOf="@+id/tv_aboutplace_info">
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:src="@mipmap/home_info_temperature" />
+
+                <TextView
+                    android:id="@+id/tv_aboutplace_temp"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="@dimen/toolbar_aboutplace_weather_text_size" />
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/home_info_humidity" />
+
+                <TextView
+                    android:id="@+id/tv_aboutplace_humi"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="@dimen/toolbar_aboutplace_weather_text_size" />
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/home_info_finedust" />
+
+                <TextView
+                    android:id="@+id/tv_aboutplace_finedust"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="@dimen/toolbar_aboutplace_weather_text_size" />
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/home_info_ozone" />
+
+                <TextView
+                    android:id="@+id/tv_aboutplace_ozon"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:textAlignment="center"
+                    android:textSize="@dimen/toolbar_aboutplace_weather_text_size" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="9dp"
+                android:layout_marginRight="9dp"
+                android:text="@string/about_place_naksan"
+                android:textAlignment="viewStart"
+                android:textSize="10dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+                android:layout_marginTop="14dp"
+                android:layout_marginStart="9dp"
+                android:layout_marginEnd="9dp" />
+
+            <View
+                android:id="@+id/view"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginLeft="9dp"
+                android:layout_marginRight="9dp"
+                android:layout_marginTop="10dp"
+                android:background="#5F8C8C8C"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView3"
+                android:layout_marginStart="9dp"
+                android:layout_marginEnd="9dp"
+                app:layout_constraintHorizontal_bias="0.0" />
+
+            <ImageView
+                android:id="@+id/imageView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="10dp"
+                android:src="@mipmap/home_stamp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/view" />
+
+            <TextView
+                android:id="@+id/tv_aboutplace_stamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:textSize="@dimen/aboutplace_icontext_size"
+                android:textStyle="bold"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/imageView3" />
+
+            <ImageView
+                android:id="@+id/iv_aboutplace_isvisitedstamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:src="@mipmap/home_stamp_nonvisit_naksanroad"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintHorizontal_bias="0.501"
+                android:layout_marginTop="11dp"
+                app:layout_constraintTop_toBottomOf="@+id/tv_aboutplace_stamp" />
+
+            <TextView
+                android:id="@+id/tv_aboutplace_isvisittext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:textSize="@dimen/profile_setting_default_text_size"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/iv_aboutplace_isvisitedstamp" />
+
+            <View
+                android:id="@+id/view2"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginLeft="9dp"
+                android:layout_marginRight="9dp"
+                android:layout_marginTop="10dp"
+                android:background="#5F8C8C8C"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tv_aboutplace_isvisittext"
+                android:layout_marginStart="9dp"
+                android:layout_marginEnd="9dp" />
+
+            <ImageView
+                android:id="@+id/imageView5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:src="@mipmap/home_picture"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/view2"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tv_aboutplace_picture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:textSize="@dimen/aboutplace_icontext_size"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/imageView5" />
+
+        </android.support.constraint.ConstraintLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="9dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="167dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:src="@mipmap/home_user_nonupload" />
+
+            <ImageView
+                android:id="@+id/iv_aboutplace_newimage"
+                android:layout_width="167dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:src="@mipmap/home_user_nonupload"
+                android:onClick="onClickedPictureImage"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="9dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="167dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:src="@mipmap/home_user_nonupload" />
+
+            <ImageView
+                android:id="@+id/imageView2"
+                android:layout_width="167dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:src="@mipmap/home_user_nonupload" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

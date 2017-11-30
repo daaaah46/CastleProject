@@ -12,6 +12,16 @@
         android:id="@+id/toolbar"
         layout="@layout/layout_toolbar"/>
 
+    <View
+        android:layout_width="333dp"
+        android:layout_height="1dp"
+        android:layout_gravity="center"
+        android:background="#14000000"/>
+
+    <include
+        android:id="@+id/toolbar_weather"
+        layout="@layout/layout_weather_bar"/>
+
     <FrameLayout
         android:id="@+id/frameLay_home_layout"
         android:layout_width="match_parent"

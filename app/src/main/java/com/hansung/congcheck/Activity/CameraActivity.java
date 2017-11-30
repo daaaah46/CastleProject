@@ -1,5 +1,6 @@
 package com.hansung.congcheck.Activity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -7,17 +8,23 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.hansung.congcheck.Dialog.CameraSelectStickerDialog;
 import com.hansung.congcheck.R;
 import com.hansung.congcheck.Utility.CameraPreview;
 
@@ -27,56 +34,152 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class CameraActivity extends AppCompatActivity {
 
-    private static String TAG = "CameraAct";
+    private static String TAG = "CameraPreview";
     private Camera mCamera;
     private CameraPreview mPreview;
     private static String AbsolutePath;
     private boolean takePicture = false;
 
-
+    /**
+     * 상수 정의
+     */
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int FLASH_MODE_ON = 2;
     public static final int FLASH_MODE_OFF = 3;
-    private int FlashMode;
+    public static final int FLASH_MODE_TOUCH = 4;
+    public static final int RATIO_MODE_4_3 = 5;
+    public static final int RATIO_MODE_1_1 = 6;
+    public static final int TIMER_MODE_0 = 7;
+    public static final int TIMER_MODE_3 = 8;
+    public static final int TIMER_MODE_5 = 9;
+    public static final int TIMER_MODE_10 = 10;
+    public static final int Sticker_MODE_ON = 11;
+    public static final int Sticker_MODE_OFF = 12;
 
-    Button flash;
-    Button captureButton;
+    public final int REQUEST_CAMERA = 1123;
+
+    private int FlashMode;
+    private int RatioMode;
+    private int TimerMode;
+    private int StickerMode;
+
+    /**
+     * activity_camera UI 연결
+     */
+    ImageButton flash;
+    ImageButton ratio;
+    ImageButton timer;
+    ImageButton sticker;
+    ImageButton captureButton;
+    ImageButton.OnClickListener onClickListener;
+    ImageView stickerImage;
+
+    FrameLayout preview;
+    Timer timerref;
+    TimerTask timerTask;
+
+    Bitmap overlayImage;
+    boolean getBitmap = false;
+
+    CameraSelectStickerDialog stickerDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
-        // Create an instance of Camera
-        mCamera = getCameraInstance();
-        FlashMode = FLASH_MODE_OFF;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            //permission check
+            int camerapermissionCheck = checkSelfPermission(Manifest.permission.CAMERA);
+            int storagepermissionCheck = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            //권한이 부여되지 않았을 경우 : -1(PERMISSION_DENIED). 부여된 경우 0(PERMISSION_GRANTED)
+            if (camerapermissionCheck == PackageManager.PERMISSION_DENIED || storagepermissionCheck == PackageManager.PERMISSION_DENIED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CAMERA);
+            }
+            else if (camerapermissionCheck == PackageManager.PERMISSION_GRANTED && storagepermissionCheck == PackageManager.PERMISSION_GRANTED) {
 
-        // Create our Preview view and set it as the content of our activity.
-        mPreview = new CameraPreview(this, mCamera);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-        preview.addView(mPreview);
+                RatioMode = RATIO_MODE_4_3;
+                mCamera = getCameraInstance();
+                mPreview = new CameraPreview(this, mCamera);
+                preview = (FrameLayout) findViewById(R.id.camera_preview);
+                setPreviewSize();
+            }
+        }
+
+        FlashMode = FLASH_MODE_OFF;
+        TimerMode = TIMER_MODE_0;
+        StickerMode = Sticker_MODE_OFF;
+
+
 
         // Add a listener to the Capture button
-        captureButton = (Button) findViewById(R.id.btn_camera_capture);
-        captureButton.setOnClickListener(new View.OnClickListener() {
+        captureButton   = (ImageButton) findViewById(R.id.btn_camera_capture);
+        flash            = (ImageButton) findViewById(R.id.btn_camera_flash);
+        ratio            = (ImageButton) findViewById(R.id.btn_camera_ratio);
+        sticker          = (ImageButton) findViewById(R.id.btn_camera_sticker);
+        timer            = (ImageButton) findViewById(R.id.btn_camera_timer);
+        stickerImage    = (ImageView)   findViewById(R.id.iv_camera_sticker);
+
+        ibtnOnClickListener();
+
+        captureButton.setOnClickListener(onClickListener);
+        flash.setOnClickListener(onClickListener);
+        ratio.setOnClickListener(onClickListener);
+        sticker.setOnClickListener(onClickListener);
+        timer.setOnClickListener(onClickListener);
+
+    }
+
+    private void ibtnOnClickListener(){
+        onClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                switch (view.getId()){
+                    case R.id.btn_camera_capture:
+                        if(TimerMode == TIMER_MODE_0){
+                            mCamera.takePicture(mSutter,null,mPicture);
+                            takePicture = true;
+                        }else if(TimerMode == TIMER_MODE_3){
+                            setTimerReference(3000);
+                        }else if(TimerMode == TIMER_MODE_5){
+                            setTimerReference(5000);
+                        }else if(TimerMode == TIMER_MODE_10){
+                            setTimerReference(10000);
+                        }
+                        break;
+                    case R.id.btn_camera_flash:
+                        getFlashMode();
+                        break;
+                    case R.id.btn_camera_ratio:
+                        getRatioMode();
+                        break;
+                    case R.id.btn_camera_sticker:
+                        setSticker();
+                        break;
+                    case R.id.btn_camera_timer:
+                        setTimerMode();
+                        break;
+                }
+            }
+        };
+    }
+
+    private void setTimerReference(int millsecond){
+        timerref = new Timer();
+        timerTask = new TimerTask(){
+            @Override
+            public void run(){
                 mCamera.takePicture(mSutter,null,mPicture);
                 takePicture = true;
             }
-        });
-
-        flash = (Button) findViewById(R.id.btn_camera_flash);
-        flash.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getFlashMode();
-            }
-        });
-
+        };
+        timerref.schedule(timerTask, millsecond);
     }
 
     /** Check if this device has a camera */
@@ -133,6 +236,7 @@ public class CameraActivity extends AppCompatActivity {
     };
 
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
+
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
@@ -142,15 +246,16 @@ public class CameraActivity extends AppCompatActivity {
             }
 
             Bitmap cameraBitmap = rotateImage(BitmapFactory.decodeByteArray(data, 0, data.length), 90);
-            int w = cameraBitmap.getWidth();int h = cameraBitmap.getHeight();
+            int w = cameraBitmap.getWidth();
+            int h = cameraBitmap.getHeight();
 
             Bitmap newImage = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(newImage);
             canvas.drawBitmap(cameraBitmap, 0f, 0f, null);
 
-            Drawable d = getResources().getDrawable(R.mipmap.ic_launcher_round);
-            d.setBounds(50, 100, d.getIntrinsicWidth()+50, d.getIntrinsicHeight()+100);
-            d.draw(canvas);
+            /*Drawable d = getResources().getDrawable(R.mipmap.theother_sticker_big_naksanroad);
+            d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
+            d.draw(canvas);*/
 
             try {
                 FileOutputStream fos = new FileOutputStream(pictureFile);
@@ -172,17 +277,8 @@ public class CameraActivity extends AppCompatActivity {
 
     /** Create a File for saving an image or video */
     private static File getOutputMediaFile(int type){
-        /**
-         * SD카드가 마운트 되어있는지 확인하는 코드 필요함
-         // To be safe, you should check that the SDCard is mounted
-         // using Environment.getExternalStorageState() before doing this.
-         */
-
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "Congcheck");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
 
         // Create the storage directory if it does not exist
         if (! mediaStorageDir.exists()){
@@ -211,32 +307,144 @@ public class CameraActivity extends AppCompatActivity {
         Matrix mtx = new Matrix();
         mtx.postRotate(degree);
 
-        return Bitmap.createBitmap(bitmap, 0,0,w,h,mtx, true);
+        return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
+    }
+
+    private void getoverlayBitmap(){
+        getBitmap = true;
+        overlayImage = BitmapFactory.decodeResource(getResources(), R.mipmap.home_site_hansunguni);
+        stickerImage.setImageBitmap(overlayImage);
+        ((ViewGroup)stickerImage.getParent()).removeView(stickerImage);
+        preview.addView(stickerImage);
+    }
+
+    public void setSticker(){
+        switch (StickerMode){
+            case Sticker_MODE_OFF:
+                StickerMode = Sticker_MODE_ON;
+                if(!getBitmap){ // 비트맵을 한 번만 가져올 수 있게!!
+                    getoverlayBitmap();
+                }else {
+                    stickerImage.setVisibility(View.VISIBLE);
+                }
+                break;
+            case Sticker_MODE_ON:
+                StickerMode = Sticker_MODE_OFF;
+                stickerImage.setVisibility(View.INVISIBLE);
+                break;
+        }
     }
 
     public void getFlashMode(){
         switch (FlashMode){
+            case FLASH_MODE_OFF:
+                FlashMode = FLASH_MODE_TOUCH;
+                break;
+            case FLASH_MODE_TOUCH:
+                FlashMode = FLASH_MODE_ON;
+                break;
             case FLASH_MODE_ON:
                 FlashMode = FLASH_MODE_OFF;
-                break;
-            case FLASH_MODE_OFF:
-                FlashMode = FLASH_MODE_ON;
                 break;
         }
         FlashSetting();
     }
 
+    private void setTimerMode(){
+        switch (TimerMode){
+            case TIMER_MODE_0:
+                TimerMode = TIMER_MODE_3;
+                timer.setImageResource(R.mipmap.camera_timer_three);
+                break;
+            case TIMER_MODE_3:
+                TimerMode = TIMER_MODE_5;
+                timer.setImageResource(R.mipmap.camera_timer_five);
+                break;
+            case TIMER_MODE_5:
+                TimerMode = TIMER_MODE_10;
+                timer.setImageResource(R.mipmap.camera_timer_ten);
+                break;
+            case TIMER_MODE_10:
+                TimerMode = TIMER_MODE_0;
+                timer.setImageResource(R.mipmap.camera_timer);
+                break;
+        }
+    }
+
+    public void getRatioMode(){
+        switch (RatioMode){
+            case RATIO_MODE_4_3:
+                RatioMode = RATIO_MODE_1_1;
+                ratio.setImageResource(R.mipmap.camera_screen_ratio_oneone);
+                break;
+            case RATIO_MODE_1_1:
+                RatioMode = RATIO_MODE_4_3;
+                ratio.setImageResource(R.mipmap.camera_screen_ratio_fourthree);
+                break;
+        }
+        //setPreviewSize();
+    }
+
     private void FlashSetting(){
         Camera.Parameters parameters = mCamera.getParameters();
         switch (FlashMode){
-            case FLASH_MODE_ON:
-                //FLASH_MODE_TORCH가 플래시 계속 켜는 것임
-                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-                break;
             case FLASH_MODE_OFF:
                 parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                flash.setImageResource(R.mipmap.camera_nonfalsh);
+                break;
+
+            case FLASH_MODE_TOUCH:
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                flash.setImageResource(R.mipmap.camera_falsh);
+                break;
+
+            case FLASH_MODE_ON:
+                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+                flash.setImageResource(R.mipmap.camera_autoflash);
                 break;
         }
         mCamera.setParameters(parameters);
+    }
+
+    private void setPreviewSize(){
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        int previewWidth = getWindow().getWindowManager().getDefaultDisplay().getWidth();
+        int previewHeight = 0;
+        switch (RatioMode) {
+            case RATIO_MODE_4_3:
+                previewHeight = previewWidth * 4 / 3;
+                break;
+            case RATIO_MODE_1_1:
+                previewHeight = previewWidth;
+                break;
+        }
+        params.width = previewWidth;
+        params.height = previewHeight;
+        params.gravity = Gravity.CENTER;
+        //preview.removeAllViews();
+        preview.addView(mPreview,params);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
+                    RatioMode = RATIO_MODE_4_3;
+                    mCamera = getCameraInstance();
+                    // Create our Preview view and set it as the content of our activity.
+                    mPreview = new CameraPreview(this, mCamera);
+                    preview = (FrameLayout) findViewById(R.id.camera_preview);
+                    //preview.addView(mPreview);
+                    setPreviewSize();
+                } else {
+                    Toast.makeText(getApplicationContext(),"카메라 사용과 저장소를 동의하지 않으면 사용할 수 없습니다.",Toast.LENGTH_LONG).show();
+                    finish();
+                }
+                return;
+            }
+        }
     }
 }
