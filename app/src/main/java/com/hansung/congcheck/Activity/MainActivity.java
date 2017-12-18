@@ -24,7 +24,13 @@ import com.hansung.congcheck.Fragment.HomeFragment;
 import com.hansung.congcheck.Fragment.OtherPlaceFragment;
 import com.hansung.congcheck.Fragment.ProfileFragment;
 import com.hansung.congcheck.Fragment.SettingFragment;
+import com.hansung.congcheck.POJO.LocationAirvalueList;
+import com.hansung.congcheck.POJO.UserInfoList;
+import com.hansung.congcheck.POJO.UserVisitData;
+import com.hansung.congcheck.POJO.WeatherinUser;
 import com.hansung.congcheck.R;
+import com.hansung.congcheck.Retrofit2.HttpClient;
+import com.hansung.congcheck.Retrofit2.HttpService;
 import com.hansung.congcheck.Utility.Constants;
 import com.hansung.congcheck.Utility.SharedPrefManager;
 
@@ -35,14 +41,21 @@ import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.Identifier;
 import org.altbeacon.beacon.RangeNotifier;
 import org.altbeacon.beacon.Region;
+import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 public class MainActivity extends AppCompatActivity implements BeaconConsumer{
 
     public final int REQUEST_ACCESS_COARSE_LOCATION = 1003;
-    public String TAG = "MainActivity";
+    public String TAG = "BeaconReference";
 
     /**
      * fragment Valueables
@@ -61,12 +74,25 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     ImageButton navigation_setting;
     ImageButton.OnClickListener onClickListener;
 
+    /**
+     * WeatherBar
+     */
+    List<WeatherinUser.Weather> weather;
+    TextView temperature;
+    TextView humidity;
+    TextView finedust;
+    TextView Ozone;
+
+    List<UserVisitData.VisitValue> userVisitValue;
+
     ConstraintLayout weathertoolbar;
 
     /**
      * SharedPreference Value
      */
     SharedPrefManager pref;
+    String UserNumber;
+    List<UserInfoList.UserInfo> userInfo;
 
     /**
      * Beacon Variables Setting
@@ -79,19 +105,21 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     //UUID값
     private static final String UUID1 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000001"; //우리 비콘 UUID
     private static final String UUID2 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000002";
-    private static final String UUID3 = "aaaaaaaa-bbbb-bbbb-cccc-cccc12121212";
-    private static final String UUID4 = "8fef2e11-d140-2ed1-2eb1-4138edcabe09";
+    private static final String UUID3 = "f7a3e806-f5bb-43f8-ba87-0783669ebeb1";
+    private static final String UUID4 = "AAAAAAAA-BBBB-BBBB-CCCC-CCCC00000001";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        pref = SharedPrefManager.getInstance(this);
+        UserNumber = pref.getPrefDataUsernumber();
+
         requestPermission();
         beaconSetting();
-        if (!Constants.UserVisit.isGetServerData()) {
-            getServerData();
-            Constants.UserVisit.setGetServerData(true);
-        }
+        searchWeatherinUser("종로구");
+        getServerData(UserNumber);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         weathertoolbar = (ConstraintLayout) findViewById(R.id.toolbar_weather);
@@ -108,6 +136,11 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         navigation_otherplace  = (ImageButton)findViewById(R.id.navigation_otherplace);
         navigation_profile     = (ImageButton)findViewById(R.id.navigation_profile);
         navigation_setting     = (ImageButton)findViewById(R.id.navigation_setting);
+
+        temperature = (TextView)findViewById(R.id.tv_weatherbar_temperature);
+        humidity    =(TextView)findViewById(R.id.tv_weatherbar_humidity);
+        finedust    = (TextView)findViewById(R.id.tv_weatherbar_finedust);
+        Ozone        = (TextView)findViewById(R.id.tv_weatherbar_Ozone);
 
         setOnClickListener(); //리스너 객체 생성
 
@@ -204,14 +237,14 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         }
     }
 
-    /**
-     * 서버에서 유저의 방문 데이터를 가져와서 전역변수에 저장
-     */
-    public void getServerData(){
-        Constants.UserVisit.setNaksanroad(true);
-        Constants.UserVisit.setNaksanpark(false);
-        Constants.UserVisit.setHansunguni(false);
-        Constants.UserVisit.setHyehwadoor(true);
+
+    boolean tfdetermine(String value){
+        if(value.equals("1")){
+            return true;
+        }else if(value.equals("0")){
+            return false;
+        }
+        return false;
     }
 
     private void requestPermission(){
@@ -246,7 +279,6 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
     void beaconSetting(){
         beaconManager = BeaconManager.getInstanceForApplication(this);
         beaconManager.getBeaconParsers().add((new BeaconParser().setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24")));
-        //현재 5초로 스캔 시간 설정 > 나중에 2분으로 변경!
         beaconManager.setForegroundBetweenScanPeriod(5000);
         beaconManager.bind(this);
     }
@@ -270,10 +302,12 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
                     Log.e(TAG, "Distance : " + beacons.iterator().next().getDistance() + "(meter)");
                     UUID = beacons.iterator().next().getId1().toString();
                     Log.e(TAG, "UUID : " + UUID);
-                    Major = beacons.iterator().next().getId2().toString();
+                    Major = beacons.iterator().next().getId2().toHexString();
+                    Constants.WEATHER.Major = Major;
                     Log.i(TAG, "Major : " + Major);
-                    Minor = beacons.iterator().next().getId3().toString();
+                    Minor = beacons.iterator().next().getId3().toHexString();
                     Log.i(TAG, "Minor : " + Minor);
+                    Constants.WEATHER.Minor = Minor;
                     Log.e(TAG, "--------------------------------------------------------------------------------");
                 }
             }
@@ -286,5 +320,82 @@ public class MainActivity extends AppCompatActivity implements BeaconConsumer{
         }catch(RemoteException e){
 
         }
+    }
+
+    //서버에서 (상단의) 날씨 데이터를 가져오는 부분 (통신!)
+    private void searchWeatherinUser(String sname){
+        HttpService api = HttpClient.getStationListService();
+        Call<WeatherinUser> call = api.getWeatherInfo(sname);
+        call.enqueue(new Callback<WeatherinUser>() {
+            @Override
+            public void onResponse(Call<WeatherinUser> call, Response<WeatherinUser> response) {
+                if(response.isSuccessful()){
+                    weather = response.body().getWeatherInfo();
+                    for(int i=0; i<weather.size(); i++){
+                        temperature.setText(weather.get(i).getKahiValue());
+                        humidity.setText(weather.get(i).getPm10Value());
+                        finedust.setText(weather.get(i).getPm25Value());
+                        Ozone.setText(weather.get(i).getO3Value());
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "날씨 데이터를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<WeatherinUser> call, Throwable t) {
+                //.makeText(getContext(), "connection error", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+
+     //서버에서 유저 식별 번호를 가져온다 -> UservisitDataSetting함수의 매개변수로 보낸다
+    public void getServerData(String userNumber){
+        HttpService api = HttpClient.getStationListService();
+        Call<UserInfoList> call = api.getUserInfo(userNumber);
+        call.enqueue(new Callback<UserInfoList>() {
+            @Override
+            public void onResponse(Call<UserInfoList> call, Response<UserInfoList> response) {
+                if(response.isSuccessful()){
+                    userInfo = response.body().getUserInfo();
+                    UserVisitDataSetting(userInfo.get(0).getNum());
+                } else {
+                    Toast.makeText(getApplicationContext(), "방문데이터를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Call<UserInfoList> call, Throwable t) {
+                //.makeText(getContext(), "connection error", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    //서버에서 가져온 유저의 방문 데이터를 전역변수에 셋팅함
+    public void UserVisitDataSetting(String num) {
+        HttpService api = HttpClient.getStationListService();
+        Call<UserVisitData> call = api.getUservisitInfo(num);
+        call.enqueue(new Callback<UserVisitData>() {
+            @Override
+            public void onResponse(Call<UserVisitData> call, Response<UserVisitData> response) {
+                if (response.isSuccessful()) {
+                    userVisitValue = response.body().getUservisitInfo();
+                    String responseData = "";
+                    for (int i = 0; i < userVisitValue.size(); i++) {
+                        Constants.UserVisit.setNaksanroad(tfdetermine(userVisitValue.get(i).getNaksanroad()));
+                        Constants.UserVisit.setNaksanpark(tfdetermine(userVisitValue.get(i).getNaksanpark()));
+                        Constants.UserVisit.setHansunguni(tfdetermine(userVisitValue.get(i).getHansunguni()));
+                        Constants.UserVisit.setHyehwadoor(tfdetermine(userVisitValue.get(i).getHeyhwadoor()));
+                    }
+                    Log.e(TAG, responseData);
+                } else {
+                    Toast.makeText(getApplicationContext(), "방문데이터를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserVisitData> call, Throwable t) {
+                //.makeText(getContext(), "connection error", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

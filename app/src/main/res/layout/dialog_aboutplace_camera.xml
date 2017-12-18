@@ -32,8 +32,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="9dp"
                 android:text="사진 선택"
-                android:textSize="10dp"
-                android:textAlignment="center" />
+                android:textAlignment="center"
+                android:textColor="@color/colorBlack_80"
+                android:textSize="10dp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -59,9 +60,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="13dp"
-                    android:textSize="10dp"
                     android:text="사진 촬영"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    android:textColor="@color/colorBlack_80"
+                    android:textSize="10dp" />
             </LinearLayout>
     </LinearLayout>
 </LinearLayout>

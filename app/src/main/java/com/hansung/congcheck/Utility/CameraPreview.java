@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.Display;
@@ -13,40 +14,45 @@ import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 
+import com.hansung.congcheck.Activity.CameraActivity;
 import com.hansung.congcheck.R;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by user5 on 2017-10-17.
  */
 
-public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
+
     private SurfaceHolder mHolder;
     private Camera mCamera;
+
+    List<Camera.Size> pictureSizeList;
+    List<Camera.Size> previewSizeList;
+    Camera.Size bestPreviewSize;
+    Camera.Size bestPictureSize;
+
     private String TAG = "CameraPreview";
     public CameraPreview(Context context, Camera camera){
         super(context);
         mCamera = camera;
         mHolder = getHolder();
         mHolder.addCallback(this);
+
+        pictureSizeList = mCamera.getParameters().getSupportedPictureSizes();
+        previewSizeList = mCamera.getParameters().getSupportedPreviewSizes();
     }
 
-    // The Surface has been created, now tell the camera where to draw the preview.
     public void surfaceCreated(SurfaceHolder holder) {
-        Canvas canvas = null;
         try {
-            setWillNotDraw(false);
-            mCamera.setDisplayOrientation(90);
             mCamera.setPreviewDisplay(holder);
             mCamera.startPreview();
         } catch (IOException e) {
             Log.d(TAG, "Error setting camera preview: " + e.getMessage());
-        }finally {
-            if(canvas != null){
-                holder.unlockCanvasAndPost(canvas);
-            }
         }
     }
 
@@ -54,26 +60,21 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // empty. Take care of releasing the Camera preview in your activity.
     }
 
-    // If your preview can change or rotate, take care of those events here.
-    // Make sure to stop the preview before resizing or reformatting it.
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         if (mHolder.getSurface() == null){
-            // preview surface does not exist
             return;
         }
-
-        // stop preview before making changes
         try {
             mCamera.stopPreview();
         } catch (Exception e){
-            // ignore: tried to stop a non-existent preview
+
         }
+        Camera.Parameters parameters = mCamera.getParameters();
+        parameters.setPreviewSize(bestPreviewSize.width, bestPreviewSize.height);
+        parameters.setPictureSize(bestPictureSize.width, bestPictureSize.height);
 
-        // set preview size and make any resize, rotate or
-        // reformatting changes here
-
-        // start preview with new settings
         try {
+            mCamera.setParameters(parameters);
             mCamera.setDisplayOrientation(90);
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
@@ -83,36 +84,52 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     @Override
-    public void draw(Canvas canvas){
-        super.draw(canvas);
-        Paint p = new Paint(Color.RED);
-        Bitmap frame = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round);
-        canvas.drawBitmap(frame, 50, 100, p);
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
+        int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
+        setMeasuredDimension(width, height);
+        if (previewSizeList != null) {
+            bestPreviewSize =
+                    getOptimalPreviewSize(previewSizeList, width, height);
+        }
+        if (pictureSizeList != null){
+            bestPictureSize = getOptimalPreviewSize(pictureSizeList, width, height);
+        }
     }
 
-    public int getDisplayRotation(){
-        Display display = ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-        int rotation = display.getRotation();
-        int degree = 0;
+    public Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
+        final double ASPECT_TOLERANCE = 0.1;
+        double targetRatio = (double) h / w;
 
-        switch (rotation){
-            case Surface.ROTATION_0:
-                degree = 0;
-                break;
-            case Surface.ROTATION_90:
-                degree = 90;
-                break;
-            case Surface.ROTATION_180:
-                degree = 180;
-                break;
-            case Surface.ROTATION_270:
-                degree = 270;
-                break;
-            default:
-                degree = 0;
-                break;
+        if (sizes == null)
+            return null;
+
+        Camera.Size optimalSize = null;
+        double minDiff = Double.MAX_VALUE;
+
+        int targetHeight = h;
+
+        for (Camera.Size size : sizes) {
+            double ratio = (double) size.width / size.height;
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE)
+                continue;
+
+            if (Math.abs(size.height - targetHeight) < minDiff) {
+                optimalSize = size;
+                minDiff = Math.abs(size.height - targetHeight);
+            }
         }
-        degree = (90 - degree + 360) % 360;
-        return degree;
+
+        if (optimalSize == null) {
+            minDiff = Double.MAX_VALUE;
+            for (Camera.Size size : sizes) {
+                if (Math.abs(size.height - targetHeight) < minDiff) {
+                    optimalSize = size;
+                    minDiff = Math.abs(size.height - targetHeight);
+                }
+            }
+        }
+
+        return optimalSize;
     }
 }

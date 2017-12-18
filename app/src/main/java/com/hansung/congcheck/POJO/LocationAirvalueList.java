@@ -26,7 +26,6 @@ public class LocationAirvalueList implements Serializable
         this.locationAirvalue = locationAirvalue;
     }
 
-
     public class LocationAirvalue implements Serializable
     {
 

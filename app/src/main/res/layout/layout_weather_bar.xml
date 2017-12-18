@@ -51,6 +51,7 @@
                 app:srcCompat="@mipmap/home_info_humidity" />
 
             <TextView
+                android:id="@+id/tv_weatherbar_humidity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -71,6 +72,7 @@
                 app:srcCompat="@mipmap/home_info_finedust" />
 
             <TextView
+                android:id="@+id/tv_weatherbar_finedust"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -91,6 +93,7 @@
                 app:srcCompat="@mipmap/home_info_ozone" />
 
             <TextView
+                android:id="@+id/tv_weatherbar_Ozone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

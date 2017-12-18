@@ -7,36 +7,30 @@ package com.hansung.congcheck.Utility;
 
 
 public class Constants {
-
-    public static final class LOGIN {
-        public static final String LOGINSUCCESS = "loginsuccess";
-        public static final String LOGINFAIL = "loginfail";
-        public static String LOGIN_NAME = "";
-        public static String LOGIN_ID = "";
+    public static final class DB{
+        public static String DBName = "sql_userImage.db";
+        public static int DBVersion = 1;
     }
 
     public static final class WEATHER{
-        public static String Dust = "";
-        public static String O3 = "";
-        public static String Temperature = "";
-        public static String Humidity = "";
+        public static String Major = "0x0000";
+        public static String Minor = "0x0000";
     }
 
+    //장소 식별 번호
     public static final class PLACENUMBER{
-        public static final int NAKSANPARKPATH = 1;
+        public static final int NAKSANROAD = 1;
         public static final int NAKSANPARK = 2;
-        public static final int HANSUNGUNIV = 3;
-        public static final int HYEHWAMOON = 4;
-
-        //장소가 추가 되면 이 곳에 장소 식별 번호를 넣을 것
+        public static final int HANSUNGUNI = 3;
+        public static final int HYEHWADOOR = 4;
     }
 
     public static class UserVisit{
         public static boolean getServerData = false;
-        public static boolean place01;
-        public static boolean place02;
-        public static boolean place03;
-        public static boolean place04;
+        public static boolean Naksanroad;
+        public static boolean Naksanpark;
+        public static boolean Hansunguni;
+        public static boolean Hyehwadoor;
 
         public static boolean isGetServerData() {
             return getServerData;
@@ -46,36 +40,37 @@ public class Constants {
             UserVisit.getServerData = getServerData;
         }
 
-        public static boolean isPlace01() {
-            return place01;
+        public static boolean isNaksanroad() {
+            return Naksanroad;
         }
 
-        public static void setPlace01(boolean place01) {
-            UserVisit.place01 = place01;
+        public static void setNaksanroad(boolean naksanroad) {
+            UserVisit.Naksanroad = naksanroad;
         }
 
-        public static boolean isPlace02() {
-            return place02;
+        public static boolean isNaksanpark() {
+            return Naksanpark;
         }
 
-        public static void setPlace02(boolean place02) {
-            UserVisit.place02 = place02;
+        public static void setNaksanpark(boolean naksanpark) {
+            UserVisit.Naksanpark = naksanpark;
         }
 
-        public static boolean isPlace03() {
-            return place03;
+        public static boolean isHansunguni() {
+            return Hansunguni;
         }
 
-        public static void setPlace03(boolean place03) {
-            UserVisit.place03 = place03;
+        public static void setHansunguni(boolean hansunguni) {
+            UserVisit.Hansunguni = hansunguni;
         }
 
-        public static boolean isPlace04() {
-            return place04;
+        public static boolean isHyehwadoor() {
+            return Hyehwadoor;
         }
 
-        public static void setPlace04(boolean place04) {
-            UserVisit.place04 = place04;
+        public static void setHyehwadoor(boolean hyehwadoor) {
+            UserVisit.Hyehwadoor = hyehwadoor;
         }
     }
+
 }

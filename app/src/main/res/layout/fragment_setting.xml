@@ -25,14 +25,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginLeft="7dp"
             android:text="버전 정보"
+            android:textColor="@color/colorBlack_80"
             android:textSize="@dimen/profile_setting_default_text_size" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_margin="8dp"
         android:background="#d9d9d9" />
 
     <LinearLayout
@@ -53,14 +54,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginLeft="7dp"
             android:text="공지 사항"
+            android:textColor="@color/colorBlack_80"
             android:textSize="@dimen/profile_setting_default_text_size" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_margin="4dp"
         android:background="#d9d9d9" />
 
     <LinearLayout
@@ -80,7 +82,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginLeft="9dp"
             android:text="팝업 설정"
+            android:textColor="@color/colorBlack_80"
             android:textSize="@dimen/profile_setting_default_text_size" />
 
         <Switch
@@ -90,13 +94,13 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center|right"
             android:layout_margin="8dp"
-            android:thumb="@drawable/switch_thumb" />
+            android:thumb="@drawable/switch_thumb"
+            android:track="@drawable/switch_track_checker" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_margin="4dp"
         android:background="#d9d9d9" />
 
     <LinearLayout
@@ -117,13 +121,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginLeft="9dp"
             android:text="언어 선택"
+            android:textColor="@color/colorBlack_80"
             android:textSize="@dimen/profile_setting_default_text_size" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_margin="4dp"
         android:background="#d9d9d9" />
 </LinearLayout>

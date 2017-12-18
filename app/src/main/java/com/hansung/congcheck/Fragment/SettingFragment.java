@@ -1,33 +1,35 @@
 package com.hansung.congcheck.Fragment;
 
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioGroup;
-import android.widget.Spinner;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.Switch;
 
-
 import com.hansung.congcheck.R;
+import com.hansung.congcheck.Utility.SharedPrefManager;
 
 public class SettingFragment extends Fragment {
-
-    public static final String PREF_DATA_NAME = "DATA_OF_USER_CONGCHECK";
-    public static final String PREF_DATA_POP_UP = "POP_UP";
-    public static final String PREF_DATA_LANGUAGE = "LANGUAGE";
-    public static final String PREF_DATA_APP_VERSION = "APP_VERSION";
-
-    RadioGroup rG_language;
+    /**
+     * UI Connect
+     */
     Switch switch_popup;
-    Spinner Language;
+    LinearLayout version;
+    LinearLayout notice;
+    LinearLayout language;
+    LinearLayout.OnClickListener onClickListener;
 
     boolean setPopup;
 
-    private OnFragmentInteractionListener mListener;
+    FragmentManager fragmentManager;
+    FragmentTransaction fragmentTransaction;
+    SharedPrefManager pref;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,24 +41,18 @@ public class SettingFragment extends Fragment {
                              Bundle savedInstanceState) {
         View  view = inflater.inflate(R.layout.fragment_setting, container, false);
 
-        rG_language = (RadioGroup)view.findViewById(R.id.rG_language);
+        //preference 데이터 가져옴
+        pref = SharedPrefManager.getInstance(getActivity().getApplicationContext());
+
+        version = (LinearLayout)view.findViewById(R.id.ll_setting_version);
+        notice = (LinearLayout)view.findViewById(R.id.ll_setting_notice);
+        language = (LinearLayout)view.findViewById(R.id.ll_setting_language);
+        setOnClickListener();
+        version.setOnClickListener(this.onClickListener);
+        notice.setOnClickListener(this.onClickListener);
+        language.setOnClickListener(this.onClickListener);
         switch_popup = (Switch)view.findViewById(R.id.switch_popup);
-        Language = (Spinner)view.findViewById(R.id.spinner_setting_language);
         getConstantData();
-
-        /*ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this.getActivity(),R.array.setting_Language,R.layout.fragment_setting);
-        //adapter.setDropDownViewResource(R.lay);
-        Language.setAdapter(adapter);*/
-
-        /*rG_language.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, @IdRes int i) {
-                int id = rG_language.getCheckedRadioButtonId();
-                Snackbar.make(container, "언어설정을 저장하였습니다.", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
         switch_popup.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean ischecked) {
@@ -66,32 +62,51 @@ public class SettingFragment extends Fragment {
                     setPopup = true;
 
                 }else{
-                    Snackbar.make(container, "팝업 설정을 Off 하였습니다.", Snackbar.LENGTH_LONG)
+                    Snackbar.make(getView(), "팝업 설정을 Off 하였습니다.", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                     setPopup = false;
                 }
             }
-        });*/
+        });
         return view;
+    }
+
+    private void setOnClickListener(){
+        fragmentManager = getFragmentManager();
+        fragmentTransaction = fragmentManager.beginTransaction();
+        onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switch(view.getId()){
+                    case R.id.ll_setting_version:
+                        fragmentTransaction.replace(R.id.frameLay_home_layout, new SettingVersionFragment());
+                        fragmentTransaction.addToBackStack(null); //addToBackStack()을 사용하면 이전 Fragment로 돌아가기 가능 (프래그먼트를 스택처럼 쌓는다!)
+                        fragmentTransaction.commit();
+                        break;
+                    case R.id.ll_setting_notice:
+                        fragmentTransaction.replace(R.id.frameLay_home_layout, new SettingNoticeFragment());
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
+                        break;
+                    case R.id.ll_setting_language:
+                        fragmentTransaction.replace(R.id.frameLay_home_layout, new SettingLanguageFragment());
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
+                        break;
+                }
+            }
+        };
     }
 
     @Override
     public void onPause(){
         super.onPause();
-
-        SharedPreferences pref = this.getActivity().getSharedPreferences(PREF_DATA_NAME, 0);
-        SharedPreferences.Editor edit = pref.edit();
-        edit.putBoolean(PREF_DATA_POP_UP,setPopup);
-        edit.commit();
+        pref.setPrefDataPopup(setPopup);
     }
 
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
-    }
-
-    //기존에 설정된 데이터 (Constants)를 가져온다.
+    //기존에 설정된 데이터를 가져온다.
     private void getConstantData(){
-        SharedPreferences pref = this.getActivity().getSharedPreferences(PREF_DATA_NAME, 0);
-        switch_popup.setChecked(pref.getBoolean(PREF_DATA_POP_UP,false));
+        setPopup = pref.getPrefDataPopup();
+        switch_popup.setChecked(setPopup);
     }
 }

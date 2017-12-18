@@ -41,6 +41,7 @@
                 android:layout_alignTop="@id/iv_profile_stampnumimage"
                 android:gravity="center"
                 android:text="0"
+                android:textColor="@color/colorBlack_90"
                 android:textSize="24dp"
                 android:textStyle="bold" />
         </RelativeLayout>
@@ -116,10 +117,12 @@
                     android:src="@mipmap/stamp_nonvisit_naksanroad" />
 
                 <TextView
+                    android:id="@+id/tv_profile_naksanroad"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="낙산공원 길"
+                    android:textColor="@color/visitText"
                     android:textSize="8sp" />
             </LinearLayout>
 
@@ -138,10 +141,12 @@
                     android:src="@mipmap/stamp_nonvisit_hansunguni" />
 
                 <TextView
+                    android:id="@+id/tv_profile_hansunguni"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="한성대"
+                    android:textColor="@color/visitText"
                     android:textSize="8sp" />
 
             </LinearLayout>
@@ -161,10 +166,12 @@
                     android:src="@mipmap/stamp_nonvisit_naksanpark" />
 
                 <TextView
+                    android:id="@+id/tv_profile_naksanpark"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="낙산 공원"
+                    android:textColor="@color/visitText"
                     android:textSize="8sp" />
 
             </LinearLayout>
@@ -184,10 +191,12 @@
                     android:src="@mipmap/stamp_nonvisit_hyehwadoor" />
 
                 <TextView
+                    android:id="@+id/tv_profile_hyehwadoor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="혜화문"
+                    android:textColor="@color/visitText"
                     android:textSize="8sp" />
 
             </LinearLayout>
@@ -198,7 +207,7 @@
             android:layout_width="228dp"
             android:layout_height="1dp"
             android:layout_marginTop="12dp"
-            android:background="#c1c1c1"
+            android:background="@color/visitText"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -215,6 +224,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="5dp"
             android:text="낙산공원 미방문"
+            android:textColor="@color/visitText"
             android:textSize="@dimen/profile_setting_default_text_size"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_bias="0.503"

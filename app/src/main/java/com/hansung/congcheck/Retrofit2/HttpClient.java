@@ -19,5 +19,4 @@ public class HttpClient {
     public static HttpService getStationListService(){
         return getRetrofitInstance(BaseURL).create(HttpService.class);
     }
-
 }

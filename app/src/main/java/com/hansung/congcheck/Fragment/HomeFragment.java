@@ -4,11 +4,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -19,18 +17,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.hansung.congcheck.Activity.AboutPlaceActivity;
-import com.hansung.congcheck.POJO.LocationAirvalueList;
 import com.hansung.congcheck.POJO.LocationInfoList;
 import com.hansung.congcheck.R;
-import com.hansung.congcheck.Retrofit2.HttpClient;
-import com.hansung.congcheck.Retrofit2.HttpService;
 import com.hansung.congcheck.Utility.Constants;
 
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class HomeFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
@@ -39,24 +30,21 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
      *
      */
     String count = "one";
-    List<LocationAirvalueList.LocationAirvalue> locationAirvalue;
     List<LocationInfoList.LocationInfo> locationInfo;
 
     //장소 정의
     private static final LatLng NARKSANPARK = new LatLng(37.580466,127.008580);
-    private static final LatLng NARKSANPARKPATH = new LatLng(37.581689,127.007439);
-    private static final LatLng HEAWHAMOON = new LatLng(37.587903,127.003571);
-    private static final LatLng HANSUNGUNIV = new LatLng(37.582357,127.011259);
+    private static final LatLng NARKSANROAD = new LatLng(37.581689,127.007439);
+    private static final LatLng HYEWHADOOR = new LatLng(37.587903,127.003571);
+    private static final LatLng HANSUNGUNI = new LatLng(37.582357,127.011259);
 
     //마커 정의
-    private Marker mNarksan;
-    private Marker mNarksanPath;
-    private Marker mHeawha;
-    private Marker mHansungUNIV;
+    private Marker mNarksanPark;
+    private Marker mNarksanRoad;
+    private Marker mHyewhaDoor;
+    private Marker mHansungUni;
 
     private GoogleMap mMap;
-
-    private OnFragmentInteractionListener mListener;
 
     public HomeFragment() {    }
 
@@ -73,20 +61,6 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         return view;
-    }
-
-
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
     @Override
@@ -106,17 +80,17 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
             //더넣어!!!
             case "m1":
                 Intent intent2 = new Intent(getActivity(), AboutPlaceActivity.class);
-                intent2.putExtra("PLACENUMBER", Constants.PLACENUMBER.HANSUNGUNIV);
+                intent2.putExtra("PLACENUMBER", Constants.PLACENUMBER.NAKSANROAD);
                 startActivity(intent2);
                 break;
             case "m2":
                 Intent intent3 = new Intent(getActivity(), AboutPlaceActivity.class);
-                intent3.putExtra("PLACENUMBER", Constants.PLACENUMBER.HYEHWAMOON);
+                intent3.putExtra("PLACENUMBER", Constants.PLACENUMBER.HYEHWADOOR);
                 startActivity(intent3);
                 break;
             case "m3":
                 Intent intent4 = new Intent(getActivity(), AboutPlaceActivity.class);
-                intent4.putExtra("PLACENUMBER", Constants.PLACENUMBER.NAKSANPARKPATH);
+                intent4.putExtra("PLACENUMBER", Constants.PLACENUMBER.HANSUNGUNI);
                 startActivity(intent4);
                 break;
         }
@@ -138,82 +112,32 @@ public class HomeFragment extends Fragment implements OnMapReadyCallback, Google
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mNarksan = mMap.addMarker(new MarkerOptions()
+        mNarksanPark = mMap.addMarker(new MarkerOptions()
                 .position(NARKSANPARK)
                 .title("낙산공원(Naksan Park)")
-                .snippet("서울시 종로구 동숭동 낙산길 54"));
-        mNarksan.showInfoWindow();
+                .snippet("서울시 종로구 동숭동 낙산길 54")
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.home_site_naksanpark)));
 
-        mNarksanPath = mMap.addMarker(new MarkerOptions()
-                .position(NARKSANPARKPATH)
+        mNarksanRoad = mMap.addMarker(new MarkerOptions()
+                .position(NARKSANROAD)
                 .title("낙산공원 길")
-                .snippet("서울시 종로구 동숭동 50-114"));
+                .snippet("서울시 종로구 동숭동 50-114")
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.home_site_naksanroad)));
 
-        mHeawha = mMap.addMarker(new MarkerOptions()
-                .position(HEAWHAMOON)
+        mHyewhaDoor = mMap.addMarker(new MarkerOptions()
+                .position(HYEWHADOOR)
                 .title("혜화문")
                 .snippet("서울시 성북구 성북동1가 1-1")
-                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_launcher_round)));
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.home_site_hyehwadoor)));
 
-        mHansungUNIV = mMap.addMarker(new MarkerOptions()
-                .position(HANSUNGUNIV)
+        mHansungUni = mMap.addMarker(new MarkerOptions()
+                .position(HANSUNGUNI)
                 .title("한성대학교")
-                .snippet("서울시 성북구 삼선동 삼선교로 16길 116"));
+                .snippet("서울시 성북구 삼선동 삼선교로 16길 116")
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.home_site_hansunguni)));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLng(NARKSANPARK));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
         mMap.setOnInfoWindowClickListener(this);
-        onMapaddPolyline(mMap);
-    }
-
-    public void onMapaddPolyline(GoogleMap mMap){
-
-       /* Double ArrayLines [][] = {
-                 {37.582357, 127.011259}
-                ,{37.582406, 127.012288}
-                ,{37.581474, 127.012235}
-                ,{37.581499, 127.011972}
-                ,{37.581414, 127.011567}};
-        PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.geodesic(true);
-        for(int i=0;i<ArrayLines.length;i++){
-            LatLng temp = new LatLng(ArrayLines[i][0], ArrayLines[i][1]);
-            polylineOptions.add(temp);
-        }
-        mMap.addPolyline(polylineOptions);*/
-    }
-
-    private void searchLocationInfo(){
-        HttpService api = HttpClient.getStationListService();
-        Call<LocationInfoList> call = api.getLocation_Info();
-        call.enqueue(new Callback<LocationInfoList>() {
-            @Override
-            public void onResponse(Call<LocationInfoList> call, Response<LocationInfoList> response) {
-
-                if(response.isSuccessful()){
-
-                    locationInfo = response.body().getLocationInfo();
-
-                    String responseData = "";
-
-                    for(int i=0; i<locationInfo.size(); i++){
-
-                        responseData += "location_id : "+locationInfo.get(i).getLocatinId()+
-                                "\nlocation_name : "+locationInfo.get(i).getLocationName()+
-                                "\nlocation_latitude : "+locationInfo.get(i).getLocationLatitude()+
-                                "\nlocation_longitude : "+locationInfo.get(i).getLocationLongitude()+
-                                "\nlocation_addr : "+locationInfo.get(i).getLocationAddr()+"\n\n";
-                    }
-                    Log.e("searchLocationInfo", responseData);
-                } else {
-                    Toast.makeText(getContext(), "worng", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<LocationInfoList> call, Throwable t) {
-                Toast.makeText(getContext(), "connection error", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }

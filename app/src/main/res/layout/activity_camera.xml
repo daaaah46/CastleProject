@@ -61,7 +61,21 @@
         <FrameLayout
             android:id="@+id/camera_preview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/tv_camera_timer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/camera_preview"
+            android:layout_alignLeft="@id/camera_preview"
+            android:layout_alignRight="@id/camera_preview"
+            android:layout_alignTop="@id/camera_preview"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:textColor="@color/colorWhite"
+            android:textSize="48dp"
+            android:typeface="sans" />
     </RelativeLayout>
 
     <LinearLayout

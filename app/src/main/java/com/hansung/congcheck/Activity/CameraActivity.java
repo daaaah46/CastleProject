@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -11,7 +12,9 @@ import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
+import android.os.CountDownTimer;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,11 +25,13 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.hansung.congcheck.Dialog.CameraSelectStickerDialog;
 import com.hansung.congcheck.R;
 import com.hansung.congcheck.Utility.CameraPreview;
+import com.hansung.congcheck.Utility.Constants;
+import com.hansung.congcheck.Utility.SharedPrefManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,6 +50,8 @@ public class CameraActivity extends AppCompatActivity {
     private CameraPreview mPreview;
     private static String AbsolutePath;
     private boolean takePicture = false;
+    private int timerNum = 0;
+
 
     /**
      * 상수 정의
@@ -67,6 +75,7 @@ public class CameraActivity extends AppCompatActivity {
     private int RatioMode;
     private int TimerMode;
     private int StickerMode;
+    private int FacingMode;
 
     /**
      * activity_camera UI 연결
@@ -76,8 +85,11 @@ public class CameraActivity extends AppCompatActivity {
     ImageButton timer;
     ImageButton sticker;
     ImageButton captureButton;
+    ImageButton transition;
     ImageButton.OnClickListener onClickListener;
     ImageView stickerImage;
+    TextView timerText;
+    Handler handler;
 
     FrameLayout preview;
     Timer timerref;
@@ -86,12 +98,16 @@ public class CameraActivity extends AppCompatActivity {
     Bitmap overlayImage;
     boolean getBitmap = false;
 
-    CameraSelectStickerDialog stickerDialog;
+    int PLACENUMBER;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+        FacingMode = Camera.CameraInfo.CAMERA_FACING_BACK;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             //permission check
@@ -116,6 +132,8 @@ public class CameraActivity extends AppCompatActivity {
         TimerMode = TIMER_MODE_0;
         StickerMode = Sticker_MODE_OFF;
 
+        Intent intent = getIntent();
+        PLACENUMBER = intent.getIntExtra("PLACENUMBER",0);
 
 
         // Add a listener to the Capture button
@@ -124,7 +142,10 @@ public class CameraActivity extends AppCompatActivity {
         ratio            = (ImageButton) findViewById(R.id.btn_camera_ratio);
         sticker          = (ImageButton) findViewById(R.id.btn_camera_sticker);
         timer            = (ImageButton) findViewById(R.id.btn_camera_timer);
+        transition      = (ImageButton) findViewById(R.id.btn_camera_transition);
         stickerImage    = (ImageView)   findViewById(R.id.iv_camera_sticker);
+        timerText       = (TextView)    findViewById(R.id.tv_camera_timer);
+
 
         ibtnOnClickListener();
 
@@ -133,7 +154,9 @@ public class CameraActivity extends AppCompatActivity {
         ratio.setOnClickListener(onClickListener);
         sticker.setOnClickListener(onClickListener);
         timer.setOnClickListener(onClickListener);
+        transition.setOnClickListener(onClickListener);
 
+        handler = new Handler();
     }
 
     private void ibtnOnClickListener(){
@@ -165,6 +188,19 @@ public class CameraActivity extends AppCompatActivity {
                     case R.id.btn_camera_timer:
                         setTimerMode();
                         break;
+                    case R.id.btn_camera_transition:
+                        if(FacingMode == Camera.CameraInfo.CAMERA_FACING_BACK){
+                            FacingMode = Camera.CameraInfo.CAMERA_FACING_FRONT;
+                        }else {
+                            FacingMode = Camera.CameraInfo.CAMERA_FACING_BACK;
+                        }
+                        releaseCamera();
+                        mCamera = getCameraInstance();
+                        mPreview = new CameraPreview(CameraActivity.this, mCamera);
+                        RatioMode = RATIO_MODE_4_3;
+                        ratio.setImageResource(R.mipmap.camera_screen_ratio_fourthree);
+                        setPreviewSize();
+                        break;
                 }
             }
         };
@@ -179,7 +215,26 @@ public class CameraActivity extends AppCompatActivity {
                 takePicture = true;
             }
         };
+        timerCount(millsecond);
         timerref.schedule(timerTask, millsecond);
+    }
+
+    private void timerCount(int millsecond){
+        final CountDownTimer timer = new CountDownTimer(millsecond + 1000, 1000) {
+            @Override
+            public void onTick(long l) {
+                if(timerNum > 0) {
+                    timerText.setText(String.valueOf(timerNum));
+                    timerNum--;
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                timerText.setVisibility(View.INVISIBLE);
+            }
+        };
+        timer.start();
     }
 
     /** Check if this device has a camera */
@@ -192,30 +247,36 @@ public class CameraActivity extends AppCompatActivity {
         }
     }
 
-    /** A safe way to get an instance of the Camera object. */
-    public static Camera getCameraInstance(){
+    public Camera getCameraInstance(){
         Camera c = null;
         try {
-            c = Camera.open(); // attempt to get a Camera instance
+            c = Camera.open(FacingMode); // attempt to get a Camera instance
         }
         catch (Exception e){
-            // Camera is not available (in use or does not exist)
+
         }
-        return c; // returns null if camera is unavailable
+        return c;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(takePicture){
-            galleryUpdate();
+        releaseCamera();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(overlayImage != null) {
+            overlayImage.recycle();
         }
-        releaseCamera();              // release the camera immediately on pause event
+        releaseCamera();
+        mPreview = null;
+        super.onDestroy();
     }
 
     private void releaseCamera(){
         if (mCamera != null){
-            mCamera.release();        // release the camera for other applications
+            mCamera.release();
             mCamera = null;
         }
     }
@@ -226,6 +287,7 @@ public class CameraActivity extends AppCompatActivity {
         Uri contentUri = Uri.fromFile(f);
         mediaScanIntent.setData(contentUri);
         this.sendBroadcast(mediaScanIntent);
+        Toast.makeText(getApplicationContext(),"사진이 저장되었습니다.", Toast.LENGTH_SHORT).show();
     }
 
     private Camera.ShutterCallback mSutter = new Camera.ShutterCallback() {
@@ -236,32 +298,30 @@ public class CameraActivity extends AppCompatActivity {
     };
 
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
-
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+
             if (pictureFile == null){
                 Log.d(TAG, "Error creating media file, check storage permissions");
                 return;
             }
 
-            Bitmap cameraBitmap = rotateImage(BitmapFactory.decodeByteArray(data, 0, data.length), 90);
-            int w = cameraBitmap.getWidth();
-            int h = cameraBitmap.getHeight();
-
-            Bitmap newImage = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(newImage);
-            canvas.drawBitmap(cameraBitmap, 0f, 0f, null);
-
-            /*Drawable d = getResources().getDrawable(R.mipmap.theother_sticker_big_naksanroad);
-            d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
-            d.draw(canvas);*/
+            Bitmap getBitmap = rotateImage(BitmapFactory.decodeByteArray(data, 0, data.length));
+            if(StickerMode == Sticker_MODE_ON){
+                getBitmap = combineImage(getBitmap, overlayImage);
+            }
 
             try {
                 FileOutputStream fos = new FileOutputStream(pictureFile);
-                newImage.compress(Bitmap.CompressFormat.JPEG, 80, fos);
+                getBitmap.compress(Bitmap.CompressFormat.JPEG, 80, fos);
+
                 fos.write(data);
                 fos.close();
+                if(takePicture){
+                    galleryUpdate();
+                    setPrefImage();
+                }
             } catch (FileNotFoundException e) {
                 Log.d(TAG, "File not found: " + e.getMessage());
             } catch (IOException e) {
@@ -300,21 +360,87 @@ public class CameraActivity extends AppCompatActivity {
         return mediaFile;
     }
 
-    private Bitmap rotateImage(Bitmap bitmap, int degree){
+    private Bitmap rotateImage(Bitmap bitmap){
+        int degree = 0;
+        if(FacingMode == Camera.CameraInfo.CAMERA_FACING_BACK){
+            degree = 90;
+        }else{
+            degree = -90;
+        }
         int w = bitmap.getWidth();
         int h = bitmap.getHeight();
-
         Matrix mtx = new Matrix();
         mtx.postRotate(degree);
-
         return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
+    }
+
+    private Bitmap combineImage(Bitmap image, Bitmap overlay){
+        Bitmap cbImage = null;
+        Bitmap scaledoverlay = null;
+
+        scaledoverlay = Bitmap.createScaledBitmap(overlay, image.getWidth(), image.getHeight(), true);
+        cbImage = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(cbImage);
+        canvas.drawBitmap(image, 0f, 0f, null);
+        canvas.drawBitmap(scaledoverlay, 0f, 0f, null);
+        return cbImage;
+    }
+
+    private int getResourceIDfromString(String resName,Context context){
+        Resources resources = context.getResources();
+        int resID = resources.getIdentifier(resName, "mipmap", context.getPackageName());
+        return resID;
+    }
+
+    private String setStickerfromPLACENUMBER(int placeNum){
+        String stickerURL = new String();
+        switch (placeNum){
+            case Constants.PLACENUMBER.HYEHWADOOR:
+                stickerURL += "sticker_d_";
+                break;
+            case Constants.PLACENUMBER.HANSUNGUNI:
+                stickerURL += "sticker_e_";
+                break;
+
+            case Constants.PLACENUMBER.NAKSANROAD:
+            case Constants.PLACENUMBER.NAKSANPARK:
+                Random random = new Random();
+                int stickerNum = random.nextInt(3);
+                switch (stickerNum){
+                    case 0:
+                        stickerURL += "sticker_a_";
+                        break;
+                    case 1:
+                        stickerURL += "sticker_b_";
+                        break;
+                    case 2:
+                        stickerURL += "sticker_c_";
+                        break;
+                }
+                break;
+        }
+        return stickerURL;
     }
 
     private void getoverlayBitmap(){
         getBitmap = true;
-        overlayImage = BitmapFactory.decodeResource(getResources(), R.mipmap.home_site_hansunguni);
+        String url = setStickerfromPLACENUMBER(PLACENUMBER);
+        switch (RatioMode){
+            case RATIO_MODE_4_3:
+                url += "fournthree";
+                overlayImage = BitmapFactory.decodeResource(getResources(), getResourceIDfromString(url, getApplicationContext()));
+                Log.e(TAG, R.mipmap.sticker_c_fournthree+"");
+                break;
+            case RATIO_MODE_1_1:
+                url += "onenone";
+                overlayImage = BitmapFactory.decodeResource(getResources(), getResourceIDfromString(url, getApplicationContext()));
+                break;
+        }
         stickerImage.setImageBitmap(overlayImage);
-        ((ViewGroup)stickerImage.getParent()).removeView(stickerImage);
+        Log.e(TAG, ((ViewGroup)stickerImage.getParent())+"");
+        if((ViewGroup)stickerImage.getParent() != null){
+            ((ViewGroup) stickerImage.getParent()).removeView(stickerImage);
+        }
         preview.addView(stickerImage);
     }
 
@@ -322,8 +448,9 @@ public class CameraActivity extends AppCompatActivity {
         switch (StickerMode){
             case Sticker_MODE_OFF:
                 StickerMode = Sticker_MODE_ON;
-                if(!getBitmap){ // 비트맵을 한 번만 가져올 수 있게!!
+                if(getBitmap == false) {
                     getoverlayBitmap();
+                    stickerImage.setVisibility(View.VISIBLE);
                 }else {
                     stickerImage.setVisibility(View.VISIBLE);
                 }
@@ -355,18 +482,26 @@ public class CameraActivity extends AppCompatActivity {
             case TIMER_MODE_0:
                 TimerMode = TIMER_MODE_3;
                 timer.setImageResource(R.mipmap.camera_timer_three);
+                timerNum = 3;
+                timerText.setVisibility(View.VISIBLE);
                 break;
             case TIMER_MODE_3:
                 TimerMode = TIMER_MODE_5;
                 timer.setImageResource(R.mipmap.camera_timer_five);
+                timerNum = 5;
+                timerText.setVisibility(View.VISIBLE);
                 break;
             case TIMER_MODE_5:
                 TimerMode = TIMER_MODE_10;
                 timer.setImageResource(R.mipmap.camera_timer_ten);
+                timerNum = 10;
+                timerText.setVisibility(View.VISIBLE);
                 break;
             case TIMER_MODE_10:
                 TimerMode = TIMER_MODE_0;
                 timer.setImageResource(R.mipmap.camera_timer);
+                timerNum = 0;
+                timerText.setVisibility(View.INVISIBLE);
                 break;
         }
     }
@@ -382,7 +517,7 @@ public class CameraActivity extends AppCompatActivity {
                 ratio.setImageResource(R.mipmap.camera_screen_ratio_fourthree);
                 break;
         }
-        //setPreviewSize();
+        setPreviewSize();
     }
 
     private void FlashSetting(){
@@ -418,10 +553,11 @@ public class CameraActivity extends AppCompatActivity {
                 previewHeight = previewWidth;
                 break;
         }
+        getBitmap = false;
         params.width = previewWidth;
         params.height = previewHeight;
         params.gravity = Gravity.CENTER;
-        //preview.removeAllViews();
+        preview.removeAllViews();
         preview.addView(mPreview,params);
     }
 
@@ -445,6 +581,24 @@ public class CameraActivity extends AppCompatActivity {
                 }
                 return;
             }
+        }
+    }
+
+    private void setPrefImage(){
+        SharedPrefManager pref = SharedPrefManager.getInstance(this);
+        switch (PLACENUMBER){
+            case Constants.PLACENUMBER.NAKSANROAD:
+                pref.setPrefDataNaksanroadimage(AbsolutePath);
+                break;
+            case Constants.PLACENUMBER.NAKSANPARK:
+                pref.setPrefDataNaksanparkimage(AbsolutePath);
+                break;
+            case Constants.PLACENUMBER.HYEHWADOOR:
+                pref.setPrefDataHyehwadoorimage(AbsolutePath);
+                break;
+            case Constants.PLACENUMBER.HANSUNGUNI:
+                pref.setPrefDataHansunguniimage(AbsolutePath);
+                break;
         }
     }
 }
