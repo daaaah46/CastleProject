@@ -109,9 +109,9 @@ public class AboutPlaceActivity extends AppCompatActivity {
         String Major = Constants.WEATHER.Major;
         String Minor = Constants.WEATHER.Minor;
         ozon.setText(Major.substring(2,3));
-        finedust.setText(Integer.parseInt(Major.substring(4,6))+"㎍/m³");
-        temparature.setText(Integer.parseInt(Minor.substring(2,4))+"℃");
-        humidity.setText(Integer.parseInt(Minor.substring(4,6))+"%");
+        finedust.setText(Integer.parseInt(Major.substring(4,6),16)+"㎍/m³");
+        temparature.setText(Integer.parseInt(Minor.substring(2,4),16)+"℃");
+        humidity.setText(Integer.parseInt(Minor.substring(4,6),16)+"%");
     }
 
     public void setPlaceSetting(){
@@ -231,7 +231,6 @@ public class AboutPlaceActivity extends AppCompatActivity {
                             int resID = getResources().getIdentifier("iv_aboutplace_image_" + (i + 1), "id", getPackageName());
                             ((ImageView) findViewById(resID)).setImageBitmap(bitmap);
                             ((ImageView) findViewById(resID)).setOnClickListener(ivonClickListener);
-
                         }else {
                             if ((i % 2) == 1) {
                                 LinearLayout addlayout = (LinearLayout) findViewById(R.id.ll_aboutplace_addphoto);

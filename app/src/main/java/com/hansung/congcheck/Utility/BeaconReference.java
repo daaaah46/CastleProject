@@ -52,7 +52,6 @@ public class BeaconReference extends Application implements BootstrapNotifier {
     List<UserInfoList.UserInfo> userInfo;
     String RegionID;
     Region curRegion;
-    int PlaceNumber = Constants.PLACENUMBER.NAKSANROAD; //default
 
     List<UserVisitData.VisitValue> userVisitValue;
 
@@ -61,10 +60,10 @@ public class BeaconReference extends Application implements BootstrapNotifier {
      * UUID# : Region으로 쓸 곳의 비콘 UUID
      */
     ArrayList<Region> regions;
-    private static final String UUID1 = "AAAAAAAA-BBBB-BBBB-CCCC-CCCC00000001"; //우리 비콘 UUID
-    private static final String UUID2 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000002"; //지금 있는 스벅 UUID
-    private static final String UUID3 = "8fef2e11-d140-2ed1-2eb1-4138edcabe09";
-    private static final String UUID4 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000021"; //우리 비콘 UUID*/
+    private static final String UUID1 = "AAAAAAAA-BBBB-BBBB-CCCC-CCCC00000001";
+    private static final String UUID2 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000002";
+    private static final String UUID3 = "8fef2e11-d140-2ed1-2eb1-4138edcabe09"; //테스트용
+    private static final String UUID4 = "aaaaaaaa-bbbb-bbbb-cccc-cccc00000021";
 
     @Override
     public void onCreate() {
@@ -114,14 +113,35 @@ public class BeaconReference extends Application implements BootstrapNotifier {
         //그냥 넘어감
         //근데 1시간 이후에 방문을 했다면
         //Notification을 띄운다.
+        
         NotiandSetVisitedData();
+    }
+
+    private int setPlaceNumber(){
+        int PlaceNum = Constants.PLACENUMBER.NAKSANROAD; //default
+        switch (curRegion.getUniqueId()){
+            case "Region1":
+                PlaceNum = Constants.PLACENUMBER.NAKSANROAD;
+                break;
+            case "Region2":
+                PlaceNum = Constants.PLACENUMBER.NAKSANPARK;
+                break;
+            case "Region3":
+                PlaceNum = Constants.PLACENUMBER.HANSUNGUNI;
+                break;
+            case "Region4":
+                PlaceNum = Constants.PLACENUMBER.HYEHWADOOR;
+                break;
+        }
+        RegionID = curRegion.getUniqueId();
+        return PlaceNum;
     }
 
     private void NotiandSetVisitedData(){
         if(pref.getPrefDataPopup() == true) { //데이터 팝업을 true로 설정해놓았으면
-            sendNotification();
-            Intent intent = new Intent(this, AboutPlaceActivity.class);
-            intent.putExtra("PLACENUMBER", PlaceNumber);
+            sendNotification(); //알림창을 생성한다
+            Intent intent = new Intent(this, AboutPlaceActivity.class); //액티비티를 띄우기 위한 준비를 한다
+            intent.putExtra("PLACENUMBER", setPlaceNumber()); //intent로 꼭 장소 넘버를 보내줘야 한다.
             setUserVisitedData(pref.getPrefDataUsernumber()); //데이터베이스에 방문 값을 넣습니다..!
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             this.startActivity(intent);
@@ -137,7 +157,7 @@ public class BeaconReference extends Application implements BootstrapNotifier {
         Log.d(TAG, "didExitRegion 함수 호출됨 : 안보임");
     }
 
-    //알림창 생성, 추후에 변경
+    //알림창 생성
     private void sendNotification() {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
